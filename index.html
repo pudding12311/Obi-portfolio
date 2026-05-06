@@ -74,6 +74,22 @@
             class="relative text-white text-6xl md:text-8xl lg:text-[10rem] font-black tracking-tighter leading-none drop-shadow-2xl select-none z-10">
             SIGNALs
         </h1>
+
+        <!-- Scrap Paper Icon -->
+        <div id="resume-trigger" class="absolute bottom-6 right-6 md:bottom-12 md:right-12 z-20 cursor-pointer group hover:-rotate-3 transition-transform duration-300 shadow-xl" title="Click to view Resume">
+            <div class="w-16 h-24 md:w-20 md:h-28 bg-[#faf8f5] border border-gray-300 relative p-2 overflow-hidden flex flex-col items-center shadow-lg rotate-3 group-hover:rotate-0 transition-transform duration-300">
+                <!-- Folded Corner -->
+                <div class="absolute top-0 right-0 border-b-[16px] border-l-[16px] border-b-gray-300 border-l-transparent bg-transparent w-0 h-0 shadow-[-1px_1px_1px_rgba(0,0,0,0.1)]"></div>
+                <!-- Scribble Lines -->
+                <div class="w-full h-1 mt-4 md:mt-6 bg-gray-300 opacity-60"></div>
+                <div class="w-5/6 h-1 mt-2 bg-gray-300 opacity-60"></div>
+                <div class="w-full h-1 mt-2 bg-gray-300 opacity-60"></div>
+                <div class="w-3/4 h-1 mt-2 bg-gray-300 opacity-60"></div>
+                <div class="w-5/6 h-1 mt-2 bg-gray-300 opacity-60"></div>
+            </div>
+            <!-- Hover Label -->
+            <span class="absolute -top-8 left-1/2 -translate-x-1/2 text-white text-xs md:text-sm font-bold tracking-widest opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md">RESUME</span>
+        </div>
     </header>
 
     <section id="storys" class="w-full py-24 md:py-32 px-4 md:px-8">
@@ -176,6 +192,38 @@
         </div>
     </section>
 
+    <!-- Resume Modal -->
+    <div id="resume-modal" class="fixed inset-0 z-[100] bg-black/80 opacity-0 pointer-events-none transition-opacity duration-300 flex items-center justify-center p-4 md:p-12 cursor-pointer">
+        <div class="relative w-full max-w-4xl h-full flex justify-center items-center transition-transform duration-500 scale-95 origin-center" id="resume-content">
+            <img src="resume.jpg" alt="Resume" class="max-w-full max-h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]" />
+        </div>
+        <button class="absolute top-6 right-6 text-white text-4xl hover:text-gray-300 focus:outline-none pointer-events-none">&times;</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const trigger = document.getElementById('resume-trigger');
+            const modal = document.getElementById('resume-modal');
+            const content = document.getElementById('resume-content');
+            
+            trigger.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+                document.body.style.overflow = 'hidden'; // 阻止背景滾動
+            });
+
+            // 點擊任意處關閉
+            modal.addEventListener('click', () => {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+                content.classList.remove('scale-100');
+                content.classList.add('scale-95');
+                document.body.style.overflow = ''; // 恢復滾動
+            });
+        });
+    </script>
 </body>
 
 </html>
