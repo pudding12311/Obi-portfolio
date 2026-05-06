@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Obi's Portfolio | Logic & Lyric</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ocean-deep:   #061526;
+    --ocean-mid:    #0a2240;
+    --ocean-bright: #0e4d7c;
+    --foam:         #a8d8f0;
+    --gold:         #c9a84c;
+    --gold-light:   #e8c96a;
+    --page-cream:   #fdfaf3; /* 更乾淨的 A4 紙張顏色 */
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--ocean-deep);
+  }
+
+  /* 重新設計的高級科技質感背景 (Logic & Lyric) */
+  .bg {
+    position: fixed; inset: 0; z-index: 0;
+    background-color: #040d1a;
+    background-image: 
+      radial-gradient(circle at 0% 0%, rgba(14, 77, 124, 0.4) 0%, transparent 50%),
+      radial-gradient(circle at 100% 100%, rgba(201, 168, 76, 0.15) 0%, transparent 50%);
+    overflow: hidden;
+  }
+  .bg::before, .bg::after {
+    content: ''; position: absolute;
+    width: 60vw; height: 60vw;
+    border-radius: 50%; filter: blur(90px);
+    z-index: -1; animation: floatGlow 20s infinite alternate ease-in-out;
+  }
+  .bg::before {
+    background: rgba(26, 122, 181, 0.15);
+    top: -20%; left: -10%;
+  }
+  .bg::after {
+    background: rgba(14, 77, 124, 0.2);
+    bottom: -20%; right: -10%;
+    animation-duration: 25s;
+    animation-direction: alternate-reverse;
+  }
+  .bg-grid {
+    position: absolute; inset: 0; z-index: 0;
+    background-image: 
+      linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 20%, rgba(0,0,0,0) 80%);
+    -webkit-mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 20%, rgba(0,0,0,0) 80%);
+  }
+  @keyframes floatGlow {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(5%, 10%) scale(1.1); }
+    100% { transform: translate(-5%, -5%) scale(0.9); }
+  }
+
+  .scene {
+    position: fixed; inset: 0; z-index: 10;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 16px; 
+  }
+
+  /* ── 核心：A4 比例的書本 ── */
+  .book {
+    position: relative;
+    width: 100%; 
+    max-width: min(95vw, 1400px, calc(90vh * 1.414));
+    /* A4 跨頁比例：420mm / 297mm ≈ 1.414 */
+    aspect-ratio: 1.414 / 1; 
+    transform-style: preserve-3d;
+    perspective: 2500px; 
+  }
+
+  .book-spine {
+    position: absolute;
+    left: 50%; top: 2%; height: 96%;
+    width: 6px;
+    transform: translateX(-50%);
+    background: linear-gradient(to bottom, var(--gold-light), var(--gold), var(--gold-light));
+    box-shadow: 0 0 15px rgba(201,168,76,0.5), inset 0 0 4px rgba(0,0,0,0.3);
+    z-index: 20;
+    pointer-events: none;
+    border-radius: 2px;
+  }
+
+  .pages-container {
+    position: absolute; inset: 0;
+    transform-style: preserve-3d;
+  }
+
+  .page-img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .click-zone {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 48%;
+    cursor: pointer;
+    z-index: 30;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .click-zone.left  { left: 0; }
+  .click-zone.right { right: 0; }
+  .click-zone:hover { background: rgba(255,255,255,0.03); }
+
+  .arrow-hint {
+    opacity: 0;
+    transition: opacity 0.3s;
+    color: rgba(255,255,255,0.5);
+    font-size: 3rem;
+    pointer-events: none;
+  }
+  .click-zone:hover .arrow-hint { opacity: 1; }
+
+  .cover-title {
+    font-family: 'Cinzel', serif;
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: var(--gold-light);
+    letter-spacing: 0.25em;
+    text-align: center;
+  }
+  .cover-subtitle {
+    font-family: 'Cinzel', serif;
+    font-size: 1.2rem;
+    color: var(--foam);
+    letter-spacing: 0.2em;
+  }
+
+  .book-glow {
+    position: absolute; inset: -4px;
+    border-radius: 4px;
+    box-shadow: 0 12px 60px rgba(0,0,0,0.6), 0 0 80px rgba(14,77,124,0.3);
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- 回首頁按鈕 -->
+<a href="index.html" class="group" style="position:fixed; top:40px; right:40px; z-index:100; color:var(--gold-light); text-decoration:none; font-family:'Cinzel', serif; letter-spacing:0.15em; font-size:1rem; display:flex; align-items:center; gap:8px; opacity:0.6; transition:all 0.3s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
+  <span style="font-size:1.5rem; line-height:1; transform:translateY(-2px); transition:transform 0.3s ease;" class="group-hover:-translate-x-1">‹</span>
+  <span class="border-b border-transparent group-hover:border-[var(--gold-light)] pb-1 transition-all duration-300">HOME</span>
+</a>
+
+<div class="bg">
+  <div class="bg-grid"></div>
+</div>
+
+<canvas id="eol-canvas" style="position:fixed; inset:0; width:100%; height:100%; z-index:5; pointer-events:none; opacity:0; transition:opacity 1.5s ease; mix-blend-mode:screen;"></canvas>
+
+<button id="eol-mic-btn" style="position:fixed; bottom:40px; left:50%; transform:translateX(-50%); z-index:100; font-family:'Cinzel', serif; font-size:0.9rem; letter-spacing:0.1em; color:var(--gold-light); background:rgba(6,21,38,0.8); border:1px solid rgba(201,168,76,0.5); padding:10px 20px; border-radius:30px; cursor:pointer; opacity:0; pointer-events:none; transition:all 0.5s ease; box-shadow:0 4px 15px rgba(0,0,0,0.5);" onmouseover="this.style.background='rgba(201,168,76,0.2)'" onmouseout="this.style.background='rgba(6,21,38,0.8)'">
+  🎤 ACTIVATE ECHO OF LIGHT
+</button>
+
+<div class="scene">
+  <div class="relative w-full flex justify-center">
+    <div class="book-glow"></div>
+    <div class="book" id="book">
+      <div class="book-spine"></div>
+      <div id="pagesContainer" class="pages-container"></div>
+      <div class="click-zone left" id="prevZone"><span class="arrow-hint">‹</span></div>
+      <div class="click-zone right" id="nextZone"><span class="arrow-hint">›</span></div>
+      
+      <!-- LC YouTube Button Overlay -->
+      <a id="yt-btn-overlay" href="https://youtu.be/_A6QaGEgL2E?si=zNOi1dsMTHAnbPcj" target="_blank" style="display:none; position:absolute; bottom:5%; left:40%; transform:translateX(-50%); background:rgba(220, 0, 0, 0.9); color:white; padding:12px 28px; border-radius:50px; font-family:'Segoe UI', sans-serif; font-weight:bold; font-size:1.1rem; text-decoration:none; align-items:center; gap:8px; box-shadow: 0 10px 30px rgba(220,0,0,0.4); backdrop-filter:blur(4px); transition:all 0.3s ease; z-index: 50;" onmouseover="this.style.transform='translateX(-50%) scale(1.05)'; this.style.background='rgba(255, 0, 0, 1)'" onmouseout="this.style.transform='translateX(-50%) scale(1)'; this.style.background='rgba(220, 0, 0, 0.9)'">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+        WATCH VIDEO
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+const TOTAL_PAGES = 10;
+let currentSpread = 0;
+let isAnimating = false;
+
+function buildBook() {
+  const container = document.getElementById('pagesContainer');
+  container.innerHTML = '';
+
+  // ── 封面 ──
+  const cover = document.createElement('div');
+  cover.id = 'spread-cover';
+  cover.style.cssText = 'position:absolute;inset:0;z-index:1;';
+  cover.innerHTML = `
+    <div class="left-half" style="position:absolute;left:0;top:0;width:50%;height:100%;background:transparent;"></div>
+    <div class="right-half" style="position:absolute;right:0;top:0;width:50%;height:100%;background:var(--page-cream);overflow:hidden;box-shadow:-5px 0 15px rgba(0,0,0,0.2);">
+      <img src="cover.png" style="width:100%;height:100%;object-fit:cover;display:block;">
+    </div>
+  `;
+  container.appendChild(cover);
+
+  // ── 內部跨頁 (第 1~5 跨頁) ──
+  const PAGE_IMAGES = [
+    'index.png', 'CV.png',
+    'Manifesto.png', 'Biography.png',
+    'EoL1.png', 'EoL2.png',
+    'SD1.png', 'SD2.png',
+    'LC1.png', 'LC2.png'
+  ];
+
+  for (let s = 1; s <= 5; s++) {
+    const leftImg = PAGE_IMAGES[(s - 1) * 2];
+    const rightImg = PAGE_IMAGES[(s - 1) * 2 + 1];
+    const lp = (s - 1) * 2 + 1;
+    const rp = lp + 1;
+
+    const spread = document.createElement('div');
+    spread.id = `spread-${s}`;
+    spread.style.cssText = 'position:absolute;inset:0;display:none;';
+    spread.innerHTML = `
+      <div class="left-half" style="position:absolute;left:0;top:0;width:50%;height:100%;background:var(--page-cream);border-right:1px solid rgba(0,0,0,0.1);overflow:hidden;">
+        <img src="${leftImg}" class="page-img" style="width:100%;height:100%;object-fit:contain;background:#fff;">
+        <div style="position:absolute;bottom:20px;left:24px;font-family:'Cinzel';font-size:1rem;font-weight:600;color:rgba(0,0,0,.7);background:rgba(255,255,255,0.9);padding:4px 10px;border-radius:4px;box-shadow:0 2px 5px rgba(0,0,0,0.1);">${String(lp-1).padStart(2, '0')}</div>
+      </div>
+      <div class="right-half" style="position:absolute;right:0;top:0;width:50%;height:100%;background:var(--page-cream);overflow:hidden;">
+        <img src="${rightImg}" class="page-img" style="width:100%;height:100%;object-fit:contain;background:#fff;">
+        <div style="position:absolute;bottom:20px;right:24px;font-family:'Cinzel';font-size:1rem;font-weight:600;color:rgba(0,0,0,.7);background:rgba(255,255,255,0.9);padding:4px 10px;border-radius:4px;box-shadow:0 2px 5px rgba(0,0,0,0.1);">${String(rp-1).padStart(2, '0')}</div>
+      </div>
+    `;
+    container.appendChild(spread);
+  }
+
+  // ── 封底 ──
+  const backCover = document.createElement('div');
+  backCover.id = 'spread-back';
+  backCover.style.cssText = 'position:absolute;inset:0;display:none;';
+  backCover.innerHTML = `
+    <div class="left-half" style="position:absolute;left:0;top:0;width:50%;height:100%;background:var(--page-cream);overflow:hidden;box-shadow:5px 0 15px rgba(0,0,0,0.2);">
+      <img src="bcover.png" style="width:100%;height:100%;object-fit:cover;display:block;">
+    </div>
+    <div class="right-half" style="position:absolute;right:0;top:0;width:50%;height:100%;background:transparent;"></div>
+  `;
+  container.appendChild(backCover);
+
+  showSpread(0);
+}
+
+function showSpread(index) {
+  const ids = ['spread-cover','spread-1','spread-2','spread-3','spread-4','spread-5','spread-back'];
+  ids.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = i === index ? 'block' : 'none';
+  });
+  if (typeof setEchoOfLightMode === 'function') setEchoOfLightMode(index === 3);
+  
+  const ytBtn = document.getElementById('yt-btn-overlay');
+  if (ytBtn) {
+    ytBtn.style.display = index === 5 ? 'flex' : 'none';
+  }
+}
+
+// 核心重構：抓取真實 HTML 而非只抓圖片
+function createFlipOverlay(direction, fromHTML, toHTML, onComplete) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `position:absolute;top:0;bottom:0;width:50%;z-index:50;transform-style:preserve-3d;perspective:2500px;${direction==='forward'?'left:50%;transform-origin:left center;':'left:0;transform-origin:right center;'}`;
+  
+  const front = document.createElement('div');
+  front.style.cssText = 'position:absolute;inset:0;backface-visibility:hidden;overflow:hidden;background:var(--page-cream);';
+  front.innerHTML = fromHTML; // 注入真實 HTML 結構
+
+  const back = document.createElement('div');
+  back.style.cssText = 'position:absolute;inset:0;backface-visibility:hidden;transform:rotateY(180deg);overflow:hidden;background:var(--page-cream);';
+  back.innerHTML = toHTML; // 注入真實 HTML 結構
+  
+  overlay.appendChild(front); overlay.appendChild(back);
+  document.getElementById('pagesContainer').appendChild(overlay);
+
+  const anim = overlay.animate(
+    direction === 'forward' 
+    ? [{transform:'rotateY(0deg)'},{transform:'rotateY(-70deg)',offset:0.4},{transform:'rotateY(-180deg)'}]
+    : [{transform:'rotateY(0deg)'},{transform:'rotateY(70deg)',offset:0.4},{transform:'rotateY(180deg)'}],
+    {duration:750, easing:'cubic-bezier(0.645,0.045,0.355,1)', fill:'forwards'}
+  );
+  anim.onfinish = () => { overlay.remove(); onComplete(); };
+}
+
+function goToSpread(target) {
+  if (isAnimating || target === currentSpread || target < 0 || target > 6) return;
+  isAnimating = true;
+  const dir = target > currentSpread ? 'forward' : 'backward';
+  const s = currentSpread;
+  const ids = ['spread-cover','spread-1','spread-2','spread-3','spread-4','spread-5','spread-back'];
+  const cur = document.getElementById(ids[s]);
+  const nxt = document.getElementById(ids[target]);
+  cur.style.zIndex = '2'; nxt.style.zIndex = '1'; nxt.style.display = 'block';
+
+  let fromH = '', toH = '', hHide = null, nxtHide = null;
+  if (dir === 'forward') {
+    const rh = cur.querySelector('.right-half');
+    if (rh) fromH = rh.innerHTML;
+    const tl = nxt.querySelector('.left-half');
+    if (tl) toH = tl.innerHTML;
+    hHide = rh;
+    nxtHide = tl;
+  } else {
+    const lh = cur.querySelector('.left-half');
+    if (lh) fromH = lh.innerHTML;
+    const tr = nxt.querySelector('.right-half');
+    if (tr) toH = tr.innerHTML;
+    hHide = lh;
+    nxtHide = tr;
+  }
+
+  if (hHide) hHide.style.visibility = 'hidden';
+  if (nxtHide) nxtHide.style.visibility = 'hidden';
+  createFlipOverlay(dir, fromH, toH, () => {
+    currentSpread = target;
+    if (hHide) hHide.style.visibility = 'visible';
+    if (nxtHide) nxtHide.style.visibility = 'visible';
+    cur.style.display = 'none'; cur.style.zIndex = '0'; nxt.style.zIndex = '0';
+    showSpread(currentSpread); isAnimating = false;
+  });
+}
+
+document.getElementById('prevZone').addEventListener('click', () => goToSpread(currentSpread-1));
+document.getElementById('nextZone').addEventListener('click', () => goToSpread(currentSpread+1));
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') goToSpread(currentSpread+1);
+  if (e.key === 'ArrowLeft') goToSpread(currentSpread-1);
+});
+
+// ── Echo Of Light (Audio-Reactive Background) ──
+const eolCanvas = document.getElementById('eol-canvas');
+const eolCtx = eolCanvas.getContext('2d');
+const eolBtn = document.getElementById('eol-mic-btn');
+
+let audioCtx = null;
+let analyser = null;
+let dataArray = null;
+let eolActive = false;
+let eolAnimationId = null;
+
+let smoothHue = 200; 
+let smoothBrightness = 0;
+let phase = 0;
+
+function resizeCanvas() {
+  eolCanvas.width = window.innerWidth;
+  eolCanvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+async function initAudio() {
+  if (audioCtx) return;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const source = audioCtx.createMediaStreamSource(stream);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 512; 
+    source.connect(analyser);
+    dataArray = new Uint8Array(analyser.frequencyBinCount);
+    eolBtn.innerHTML = "✨ LISTENING...";
+    eolBtn.style.pointerEvents = 'none';
+    setTimeout(() => { eolBtn.style.opacity = '0'; }, 2000);
+  } catch (err) {
+    console.error('Mic access denied', err);
+    eolBtn.innerHTML = "MIC ACCESS DENIED";
+  }
+}
+
+eolBtn.addEventListener('click', initAudio);
+
+function drawAurora() {
+  if (!eolActive) return;
+  eolAnimationId = requestAnimationFrame(drawAurora);
+
+  let targetHue = smoothHue;
+  let targetBrightness = 0;
+
+  if (analyser && dataArray) {
+    analyser.getByteFrequencyData(dataArray);
+    let sum = 0;
+    let maxFreqVal = 0;
+    let maxFreqIndex = 0;
+    
+    for (let i = 0; i < dataArray.length; i++) {
+      let val = dataArray[i];
+      sum += val * val;
+      if (val > maxFreqVal) {
+        maxFreqVal = val;
+        maxFreqIndex = i;
+      }
+    }
+    let rms = Math.sqrt(sum / dataArray.length);
+    targetBrightness = Math.min(rms / 40, 1.0); 
+
+    if (maxFreqVal > 30) { 
+      const binWidth = audioCtx.sampleRate / analyser.fftSize;
+      const freq = maxFreqIndex * binWidth;
+      if (freq > 80 && freq < 4000) { 
+        const logMin = Math.log10(80);
+        const logMax = Math.log10(4000);
+        const logFreq = Math.log10(freq);
+        let normalized = (logFreq - logMin) / (logMax - logMin);
+        targetHue = normalized * 360; // Covers entire spectrum: Red, Yellow, Green, Blue, Purple
+      }
+    }
+  } else {
+    targetBrightness = 0.2 + Math.sin(phase * 0.05) * 0.1;
+    targetHue = (phase * 0.5) % 360; // Rainbow cycle when idle
+  }
+
+  smoothHue += (targetHue - smoothHue) * 0.05;
+  smoothBrightness += (targetBrightness - smoothBrightness) * 0.2;
+  phase += 1;
+
+  eolCtx.clearRect(0, 0, eolCanvas.width, eolCanvas.height);
+  
+  const w = eolCanvas.width;
+  const h = eolCanvas.height;
+  
+  const angle1 = phase * 0.02; 
+  const angle2 = angle1 + Math.PI; 
+  
+  const rx = w * 0.45;
+  const ry = h * 0.45;
+
+  const cx = w/2 + Math.cos(angle1) * rx;
+  const cy = h/2 + Math.sin(angle1) * ry;
+
+  const gradient = eolCtx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(w, h) * 0.6);
+  gradient.addColorStop(0, `hsla(${smoothHue}, 100%, 60%, ${smoothBrightness * 0.8 + 0.1})`);
+  gradient.addColorStop(0.5, `hsla(${(smoothHue + 40) % 360}, 100%, 50%, ${smoothBrightness * 0.4 + 0.05})`);
+  gradient.addColorStop(1, 'rgba(0,0,0,0)');
+
+  eolCtx.fillStyle = gradient;
+  eolCtx.fillRect(0, 0, w, h);
+  
+  const cx2 = w/2 + Math.cos(angle2) * rx;
+  const cy2 = h/2 + Math.sin(angle2) * ry;
+
+  const grad2 = eolCtx.createRadialGradient(cx2, cy2, 0, cx2, cy2, Math.max(w, h) * 0.6);
+  grad2.addColorStop(0, `hsla(${(smoothHue - 30) % 360}, 100%, 60%, ${smoothBrightness * 0.6 + 0.1})`);
+  grad2.addColorStop(1, 'rgba(0,0,0,0)');
+  
+  eolCtx.globalCompositeOperation = 'screen';
+  eolCtx.fillStyle = grad2;
+  eolCtx.fillRect(0, 0, w, h);
+  eolCtx.globalCompositeOperation = 'source-over';
+
+  const bookGlow = document.querySelector('.book-glow');
+  if (bookGlow) {
+    let glowSpread = 80 + (smoothBrightness * 250);
+    let glowOpacity = 0.3 + (smoothBrightness * 0.7);
+    bookGlow.style.boxShadow = `0 12px 60px rgba(0,0,0,0.6), 0 0 ${glowSpread}px hsla(${smoothHue}, 100%, 60%, ${glowOpacity}), 0 0 ${glowSpread * 2}px hsla(${(smoothHue + 40)%360}, 100%, 50%, ${glowOpacity * 0.5})`;
+  }
+}
+
+function setEchoOfLightMode(active) {
+  const bookGlow = document.querySelector('.book-glow');
+  if (active && !eolActive) {
+    eolActive = true;
+    eolCanvas.style.opacity = '1';
+    if (!audioCtx) {
+      eolBtn.style.opacity = '1';
+      eolBtn.style.pointerEvents = 'auto';
+    }
+    drawAurora();
+  } else if (!active && eolActive) {
+    eolActive = false;
+    eolCanvas.style.opacity = '0';
+    eolBtn.style.opacity = '0';
+    eolBtn.style.pointerEvents = 'none';
+    if (eolAnimationId) cancelAnimationFrame(eolAnimationId);
+    if (bookGlow) bookGlow.style.boxShadow = '0 12px 60px rgba(0,0,0,0.6), 0 0 80px rgba(14,77,124,0.3)';
+  }
+}
+
+buildBook();
+</script>
+</body>
+</html>

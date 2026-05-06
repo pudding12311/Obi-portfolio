@@ -1,0 +1,2461 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MARS — Portfolio</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@300;400;500;600;700&family=Crimson+Pro:ital,wght@0,200;0,300;1,200;1,300&display=swap"
+    rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-snap-type: y mandatory;
+      /* 流體字體：手機最小 12px，大螢幕最大 18px，中間按視窗寬度線性縮放 */
+      font-size: clamp(12px, 1.15vw, 18px);
+    }
+
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      background: #0f0300;
+      color: #e8c9a0;
+      overflow-x: hidden;
+      overflow-y: scroll;
+      /* 確保 Y 軸可滾動以觸發吸附 */
+      margin: 0;
+    }
+
+    /* GLOBAL LO-FI NOISE OVERLAY */
+    body::after {
+      content: "";
+      position: fixed;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      pointer-events: none;
+      z-index: 9999;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      opacity: 0.08;
+      animation: grainAnimation 0.5s steps(1) infinite;
+    }
+
+    @keyframes grainAnimation {
+
+      0%,
+      100% {
+        transform: translate(0, 0);
+      }
+
+      10% {
+        transform: translate(-5%, -10%);
+      }
+
+      20% {
+        transform: translate(-15%, 5%);
+      }
+
+      30% {
+        transform: translate(7%, -25%);
+      }
+
+      40% {
+        transform: translate(-5%, 25%);
+      }
+
+      50% {
+        transform: translate(-15%, 10%);
+      }
+
+      60% {
+        transform: translate(15%, 0%);
+      }
+
+      70% {
+        transform: translate(0%, 15%);
+      }
+
+      80% {
+        transform: translate(3%, 35%);
+      }
+
+      90% {
+        transform: translate(-10%, 10%);
+      }
+    }
+
+    /* KEYFRAMES FOR CTA GLITCH */
+    @keyframes glitch {
+      0% {
+        transform: translate(0)
+      }
+
+      20% {
+        transform: translate(-2px, 2px)
+      }
+
+      40% {
+        transform: translate(-2px, -2px)
+      }
+
+      60% {
+        transform: translate(2px, 2px)
+      }
+
+      80% {
+        transform: translate(2px, -2px)
+      }
+
+      100% {
+        transform: translate(0)
+      }
+    }
+
+    :root {
+      --mars-core: #0f0300;
+      --mars-deep: #1a0500;
+      --mars-mid: #3d0c00;
+      --mars-hot: #7a1e00;
+      --mars-flame: #b83200;
+      --mars-bright: #d94f00;
+      --ember: #ff6a1a;
+      --ember-soft: #ff9a4d;
+      --gold: #c9893a;
+      --gold-light: #e8b96a;
+      --gold-pale: #f5d9a8;
+      --chrome: #a89070;
+      --chrome-light: #d4bea0;
+    }
+
+    /* 1. 內縮頁框：創造實體書頁的邊界感 */
+    .guidebook-frame {
+      position: fixed;
+      inset: 20px;
+      /* 距離視窗邊緣 20px */
+      border: 1px solid rgba(255, 106, 26, 0.15);
+      /* 微弱的橘色邊框 */
+      pointer-events: none;
+      /* 確保不會阻擋點擊 */
+      z-index: 90;
+    }
+
+    /* 2. 左側垂直章節追蹤：模仿手冊的側邊索引 */
+    .chapter-tracker {
+      position: fixed;
+      left: 36px;
+      top: 50%;
+      transform: translateY(-50%) rotate(-90deg);
+      transform-origin: left center;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--chrome);
+      z-index: 100;
+      pointer-events: none;
+      transition: all 0.4s ease;
+    }
+
+    /* 3. 右下角動態頁碼：明確標示當前閱讀進度 */
+    .page-indicator {
+      position: fixed;
+      bottom: 30px;
+      right: 40px;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    .page-indicator::before {
+      content: '';
+      display: inline-block;
+      width: 40px;
+      height: 1px;
+      background: var(--ember);
+      margin-bottom: 6px;
+      margin-right: 8px;
+    }
+
+    .current-page {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      color: var(--ember-soft);
+      line-height: 1;
+    }
+
+    .total-pages {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      color: var(--chrome);
+      opacity: 0.5;
+    }
+
+    /* =========================================
+   2D 火星滾動與浮動動畫 (純 CSS)
+   ========================================= */
+
+    /* 第一層：負責監聽滾動條，處理位移與縮放 */
+    .mars-scroll-wrapper {
+      position: fixed;
+      z-index: 9999;
+      /* 確保火星在所有圖層的最上方 */
+      pointer-events: none;
+      /* 避免阻擋網頁文字的點擊 */
+
+      /* 最新的 CSS 滾動綁定技術：不需要 JS！ */
+      animation: scrollMove linear forwards;
+      animation-timeline: scroll(root);
+    }
+
+    /* 第二層：負責持續不斷的上下呼吸浮動 */
+    .mars-breathing-layer {
+      animation: float 4s ease-in-out infinite;
+    }
+
+    /* 第三層：火星圖片本體 */
+    .mars-2d-image {
+      /* 最小 260px，最大 900px，中間按視窗短邊調整 */
+      width: clamp(260px, 68vmin, 900px);
+      height: clamp(260px, 68vmin, 900px);
+      max-width: none;
+      max-height: none;
+      object-fit: contain;
+    }
+
+    /* 底層火星 (有海) */
+    .mars-base {
+      animation: fadeOutSea linear forwards;
+      animation-timeline: scroll(root);
+    }
+
+    /* 覆蓋層：在切換到第三頁時平滑顯現無海版本的火星 */
+    .mars-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      opacity: 0;
+      /* 預設完全透明 */
+      animation: fadeToNosea linear forwards;
+      animation-timeline: scroll(root);
+    }
+
+    /* 旋轉層：讓火星持續逆時鐘旋轉，並將發光效果移至此層 */
+    .mars-spin-layer {
+      position: relative;
+      display: inline-flex;
+      animation: spinPlanet 180s linear infinite reverse;
+      /* 緩慢逆時鐘旋轉 */
+      /* 將原本在外層的光暈移到這裡，確保切換圖片時光暈不消失 */
+      filter: drop-shadow(0 0 35px rgba(160, 20, 10, 0.6)) drop-shadow(0 0 15px rgba(200, 30, 15, 0.8));
+    }
+
+    @keyframes spinPlanet {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* 當無海版淡入時，有海版同時淡出，避免邊緣露出來 */
+    @keyframes fadeOutSea {
+
+      0%,
+      25% {
+        opacity: 1;
+      }
+
+      40%,
+      100% {
+        opacity: 0;
+      }
+
+      /* 抵達第三頁時完全透明 */
+    }
+
+    /* 從 25% (過第二頁後段) 開始淡入，40% (抵達第三頁) 完全顯現 */
+    @keyframes fadeToNosea {
+
+      0%,
+      25% {
+        opacity: 0;
+      }
+
+      40%,
+      100% {
+        opacity: 1;
+      }
+    }
+
+    /* 滾動軌跡：初始佔滿畫面並超出邊界，滾動後縮小至右下角 */
+    @keyframes scrollMove {
+      0% {
+        top: 50%;
+        left: 85%;
+        /* 整體向右移動，讓右側超出視窗 */
+        transform: translate(-50%, -50%) scale(2.0);
+        /* 再度放大，確保超出邊界 */
+      }
+
+      15% {
+        top: 100%;
+        left: 100%;
+        /* 縮小後往右靠緊 (-0px) */
+        transform: translate(calc(-100% - 0px), calc(-100% - 40px)) scale(0.45);
+      }
+
+      70% {
+        top: 100%;
+        left: 100%;
+        transform: translate(calc(-100% - 0px), calc(-100% - 40px)) scale(0.45);
+      }
+
+      85% {
+        top: 100%;
+        left: 100%;
+        /* 第7頁時向右移出畫面外 */
+        transform: translate(calc(0% + 150px), calc(-100% - 40px)) scale(0.45);
+      }
+
+      100% {
+        top: 100%;
+        left: 100%;
+        transform: translate(calc(0% + 150px), calc(-100% - 40px)) scale(0.45);
+      }
+    }
+
+    /* 模擬海浪起伏的呼吸浮動感 */
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-15px);
+      }
+    }
+
+    /* 平板版微調 */
+    @media (max-width: 1024px) {
+      .mars-2d-image {
+        width: clamp(220px, 72vmin, 700px);
+        height: clamp(220px, 72vmin, 700px);
+      }
+
+      .tech-content {
+        width: min(540px, 70vw);
+      }
+    }
+
+    /* 手機版微調：確保右下角的位置不會擋到導覽頁碼 */
+    @media (max-width: 768px) {
+      .mars-2d-image {
+        width: clamp(180px, 78vmin, 500px);
+        height: clamp(180px, 78vmin, 500px);
+      }
+
+      .tech-content {
+        width: 100%;
+        max-width: 100%;
+      }
+
+      @keyframes scrollMove {
+        0% {
+          top: 35%;
+          left: 65%;
+          /* 手機版也向右偏 */
+          transform: translate(-50%, -50%) scale(1.8);
+        }
+
+        15% {
+          top: 100%;
+          left: 100%;
+          /* 縮小後往右靠緊 */
+          transform: translate(calc(-100% - 0px), calc(-100% - 80px)) scale(0.5);
+        }
+
+        70% {
+          top: 100%;
+          left: 100%;
+          transform: translate(calc(-100% - 0px), calc(-100% - 80px)) scale(0.5);
+        }
+
+        85% {
+          top: 100%;
+          left: 100%;
+          /* 第7頁時向右移出畫面外 */
+          transform: translate(calc(0% + 150px), calc(-100% - 80px)) scale(0.5);
+        }
+
+        100% {
+          top: 100%;
+          left: 100%;
+          transform: translate(calc(0% + 150px), calc(-100% - 80px)) scale(0.5);
+        }
+      }
+    }
+
+    /* FIXED LAYERS */
+    #noise-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    .smoke-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .smoke-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(45px);
+      mix-blend-mode: screen;
+      animation: smokeDrift linear infinite;
+    }
+
+    @keyframes smokeDrift {
+      0% {
+        transform: translate(0, 0) scale(1) rotate(0deg);
+        opacity: 0.35;
+      }
+
+      33% {
+        transform: translate(25px, -35px) scale(1.07) rotate(60deg);
+        opacity: 0.55;
+      }
+
+      66% {
+        transform: translate(-18px, 18px) scale(0.95) rotate(130deg);
+        opacity: 0.3;
+      }
+
+      100% {
+        transform: translate(0, 0) scale(1) rotate(200deg);
+        opacity: 0.35;
+      }
+    }
+
+    .wave-svg {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      pointer-events: none;
+      opacity: 0.07;
+    }
+
+    /* NAVIGATION */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 60px;
+      background: linear-gradient(to bottom, rgba(15, 3, 0, 0.92), transparent);
+      backdrop-filter: blur(2px);
+    }
+
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.9rem;
+      letter-spacing: 0.25em;
+      color: var(--ember);
+      text-shadow: 0 0 30px rgba(255, 106, 26, 0.5);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 40px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--chrome-light);
+      text-decoration: none;
+      transition: color .3s, text-shadow .3s;
+    }
+
+    .nav-links a:hover {
+      color: var(--ember-soft);
+      text-shadow: 0 0 14px rgba(255, 106, 26, 0.5);
+    }
+
+    /* SECTION BASE */
+    section {
+      position: relative;
+      z-index: 10;
+      width: 100vw;
+      height: 100vh;
+      min-height: 100vh;
+      background: transparent !important;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      /* 水平內邊距流體：手機 5vw，大螢幕最多 12vw */
+      padding: clamp(70px, 8vh, 120px) clamp(24px, 8vw, 12vw) clamp(30px, 4vh, 60px);
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .tech-content {
+      text-align: left;
+      /* 放大 1.5 倍：小螢幕充分利用寬度，大螢幕封頂 900px */
+      width: min(800px, 54vw);
+      max-width: 100%;
+    }
+
+    /* DIVIDER */
+    .section-divider {
+      display: none;
+    }
+
+    /* LABEL */
+    .section-label {
+      font-size: 1.2rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--ember);
+      opacity: 0.75;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .section-label::before,
+    .section-label::after {
+      content: '';
+      display: inline-block;
+      width: 36px;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--ember));
+    }
+
+    .section-label::after {
+      background: linear-gradient(to left, transparent, var(--ember));
+    }
+
+    /* HEADING */
+    .section-heading {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.8rem, 5vw, 4.5rem);
+      letter-spacing: 0.08em;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--gold-pale), var(--ember-soft));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 24px;
+    }
+
+    /* BODY TEXT */
+    .body-text {
+      font-family: 'Crimson Pro', serif;
+      font-weight: 300;
+      font-size: clamp(1.15rem, 1.4vw, 1.5rem);
+      line-height: 1.85;
+      color: var(--chrome-light);
+      opacity: 0.85;
+    }
+
+    /* 內文區標題與段落放大 */
+    .tech-content h2 {
+      font-size: clamp(1.6rem, 2.5vw, 2.6rem);
+      line-height: 1.15;
+      margin-bottom: 6px;
+    }
+
+    .tech-content p,
+    .tech-details p {
+      font-family: 'Crimson Pro', serif;
+      font-weight: 300;
+      font-size: clamp(1.05rem, 1.3vw, 1.4rem);
+      line-height: 1.9;
+      color: var(--chrome-light);
+      opacity: 0.85;
+      margin-bottom: 1em;
+    }
+
+    /* 第七頁（米白背景）段落顏色覆寫：確保可讀性 */
+    #s2026 .tech-content p,
+    #s2026 .tech-details p {
+      color: #2a0f00;
+      opacity: 1;
+    }
+
+    /* ① HERO */
+    #hero {
+      background: radial-gradient(ellipse 80% 60% at 50% 80%, rgba(120, 30, 0, 0.5) 0%, transparent 70%), radial-gradient(ellipse 40% 40% at 20% 30%, rgba(60, 12, 0, 0.6) 0%, transparent 60%), linear-gradient(175deg, #0f0300 0%, #1e0800 40%, #2d0c00 70%, #1a0500 100%);
+    }
+
+    .hero-eyebrow {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.5em;
+      text-transform: uppercase;
+      color: var(--ember-soft);
+      opacity: 0.8;
+      margin-bottom: 28px;
+    }
+
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2rem, 5vw, 4.5rem);
+      line-height: 1.15;
+      padding-top: 0.1em;
+      letter-spacing: .04em;
+      background: linear-gradient(160deg, var(--gold-pale) 0%, var(--ember) 40%, var(--gold) 65%, var(--chrome-light) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 0 40px rgba(255, 106, 26, 0.22));
+      transition: transform .15s ease;
+      text-align: left;
+    }
+
+    .hero-sub {
+      font-family: 'Crimson Pro', serif;
+      font-style: italic;
+      font-weight: 200;
+      font-size: clamp(1rem, 2.5vw, 1.6rem);
+      color: var(--chrome-light);
+      opacity: 0.72;
+      margin-top: 24px;
+      letter-spacing: .06em;
+    }
+
+    .hero-cta {
+      margin-top: 52px;
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 38px;
+      border: 1px solid rgba(255, 106, 26, 0.38);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--ember-soft);
+      text-decoration: none;
+      background: rgba(180, 50, 0, 0.08);
+      backdrop-filter: blur(4px);
+      transition: all .4s;
+      clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+    }
+
+    .hero-cta:hover {
+      background: rgba(255, 106, 26, 0.12);
+      border-color: var(--ember);
+      box-shadow: 0 0 28px rgba(255, 106, 26, 0.18), inset 0 0 18px rgba(255, 106, 26, 0.05);
+      color: var(--gold-pale);
+    }
+
+    .hero-cta svg {
+      width: 16px;
+      height: 10px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.5;
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 38px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.6rem;
+      letter-spacing: 0.32em;
+      color: var(--chrome);
+      opacity: 0.45;
+      animation: sb 2.5s ease-in-out infinite;
+    }
+
+    .scroll-hint::after {
+      content: '';
+      width: 1px;
+      height: 48px;
+      background: linear-gradient(to bottom, var(--ember), transparent);
+    }
+
+    @keyframes sb {
+
+      0%,
+      100% {
+        transform: translateX(-50%) translateY(0);
+      }
+
+      50% {
+        transform: translateX(-50%) translateY(8px);
+      }
+    }
+
+    /* ② ABOUT */
+    #about {
+      background: radial-gradient(ellipse 60% 50% at 80% 50%, rgba(80, 20, 0, 0.32) 0%, transparent 70%), linear-gradient(180deg, #1a0500, #220800 50%, #1a0500);
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      max-width: 1100px;
+      width: 100%;
+      align-items: center;
+    }
+
+    .stat-row {
+      display: flex;
+      gap: 48px;
+      margin-top: 40px;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .stat-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.8rem;
+      color: var(--ember);
+      line-height: 1;
+      text-shadow: 0 0 20px rgba(255, 106, 26, 0.4);
+    }
+
+    .stat-label {
+      font-size: 0.65rem;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: var(--chrome);
+    }
+
+    .about-visual {
+      position: relative;
+      height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 106, 26, 0.18);
+      animation: rp 4s ease-in-out infinite;
+    }
+
+    .ring:nth-child(2) {
+      border-color: rgba(201, 137, 58, 0.13);
+      animation-delay: .8s;
+    }
+
+    .ring:nth-child(3) {
+      border-color: rgba(255, 106, 26, 0.22);
+      animation-delay: 1.6s;
+    }
+
+    @keyframes rp {
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: .35;
+      }
+
+      50% {
+        transform: scale(1.04);
+        opacity: .65;
+      }
+    }
+
+    .core-orb {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(180, 50, 0, 0.55), rgba(60, 10, 0, 0.4));
+      box-shadow: 0 0 55px rgba(255, 106, 26, 0.28), inset 0 0 28px rgba(255, 106, 26, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: .3em;
+      color: var(--ember-soft);
+    }
+
+    /* ③ WORK */
+    #work {
+      background: radial-gradient(ellipse 70% 50% at 30% 60%, rgba(100, 25, 0, 0.28) 0%, transparent 70%), linear-gradient(180deg, #1a0500, #280a00 60%, #1e0700);
+    }
+
+    .work-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+      max-width: 1100px;
+      width: 100%;
+      margin-top: 48px;
+    }
+
+    .work-card {
+      position: relative;
+      height: 275px;
+      border: 1px solid rgba(255, 106, 26, 0.11);
+      background: linear-gradient(135deg, rgba(60, 12, 0, 0.48), rgba(30, 5, 0, 0.58));
+      overflow: hidden;
+      cursor: pointer;
+      transition: all .4s;
+      clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+    }
+
+    .work-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, transparent, rgba(255, 106, 26, 0.07));
+      opacity: 0;
+      transition: opacity .4s;
+    }
+
+    .work-card:hover {
+      border-color: rgba(255, 106, 26, 0.33);
+      transform: translateY(-4px);
+    }
+
+    .work-card:hover::before {
+      opacity: 1;
+    }
+
+    .wc-num {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3rem;
+      color: rgba(255, 106, 26, 0.1);
+      line-height: 1;
+    }
+
+    .wc-tag {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 0.58rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--ember);
+      opacity: .7;
+    }
+
+    .wc-title {
+      position: absolute;
+      bottom: 44px;
+      left: 20px;
+      right: 20px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem;
+      letter-spacing: .08em;
+      color: var(--gold-pale);
+      line-height: 1.1;
+    }
+
+    .wc-line {
+      position: absolute;
+      bottom: 28px;
+      left: 20px;
+      width: 0;
+      height: 1px;
+      background: var(--ember);
+      transition: width .4s;
+    }
+
+    .work-card:hover .wc-line {
+      width: 44px;
+    }
+
+    /* ④ SERVICES */
+    #services {
+      background: radial-gradient(ellipse 50% 60% at 70% 40%, rgba(90, 20, 0, 0.33) 0%, transparent 65%), linear-gradient(180deg, #1e0700, #2d0c00 50%, #1a0500);
+    }
+
+    .svc-list {
+      max-width: 900px;
+      width: 100%;
+      margin-top: 48px;
+    }
+
+    .svc-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 38px;
+      padding: 34px 0;
+      border-bottom: 1px solid rgba(255, 106, 26, 0.1);
+      transition: border-color .3s;
+      cursor: default;
+    }
+
+    .svc-item:hover {
+      border-color: rgba(255, 106, 26, 0.28);
+    }
+
+    .svc-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1rem;
+      color: rgba(255, 106, 26, 0.38);
+      letter-spacing: .1em;
+      min-width: 34px;
+      padding-top: 6px;
+    }
+
+    .svc-icon {
+      width: 46px;
+      height: 46px;
+      min-width: 46px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 106, 26, 0.22);
+      background: rgba(180, 50, 0, 0.09);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      transition: box-shadow .3s;
+    }
+
+    .svc-item:hover .svc-icon {
+      box-shadow: 0 0 28px rgba(255, 106, 26, 0.28);
+    }
+
+    .svc-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.45rem;
+      letter-spacing: .1em;
+      color: var(--gold-pale);
+      margin-bottom: 8px;
+    }
+
+    .svc-desc {
+      font-family: 'Crimson Pro', serif;
+      font-weight: 300;
+      font-size: 1rem;
+      color: var(--chrome);
+      line-height: 1.7;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 13px;
+    }
+
+    .tag {
+      font-size: 0.58rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border: 1px solid rgba(255, 106, 26, 0.18);
+      color: var(--ember-soft);
+      opacity: .7;
+    }
+
+    /* ⑤ PROCESS */
+    #process {
+      background: radial-gradient(ellipse 80% 40% at 50% 100%, rgba(120, 30, 0, 0.28) 0%, transparent 60%), linear-gradient(180deg, #1a0500, #250a00 60%, #1e0700);
+    }
+
+    .steps {
+      display: flex;
+      max-width: 1100px;
+      width: 100%;
+      margin-top: 48px;
+      position: relative;
+    }
+
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 36px;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(255, 106, 26, 0.28), rgba(255, 106, 26, 0.28), transparent);
+    }
+
+    .step {
+      flex: 1;
+      padding: 0 26px;
+      text-align: center;
+    }
+
+    .step-circle {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 106, 26, 0.33);
+      background: linear-gradient(135deg, rgba(180, 50, 0, 0.18), rgba(60, 10, 0, 0.38));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 26px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.35rem;
+      color: var(--ember);
+      position: relative;
+      z-index: 1;
+      transition: box-shadow .3s, border-color .3s;
+    }
+
+    .step:hover .step-circle {
+      box-shadow: 0 0 28px rgba(255, 106, 26, 0.3);
+      border-color: rgba(255, 106, 26, 0.6);
+    }
+
+    .step-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.05rem;
+      letter-spacing: .12em;
+      color: var(--gold-pale);
+      margin-bottom: 11px;
+    }
+
+    .step-text {
+      font-family: 'Crimson Pro', serif;
+      font-size: .9rem;
+      font-weight: 300;
+      color: var(--chrome);
+      line-height: 1.7;
+    }
+
+    /* ⑥ CONTACT */
+    #contact {
+      background: radial-gradient(ellipse 60% 70% at 50% 50%, rgba(100, 25, 0, 0.38) 0%, transparent 70%), linear-gradient(180deg, #1e0700, #2d0c00 50%, #1a0500);
+    }
+
+    .contact-inner {
+      text-align: center;
+      max-width: 700px;
+    }
+
+    .contact-heading {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3.5rem, 7vw, 6rem);
+      letter-spacing: .08em;
+      background: linear-gradient(135deg, var(--gold-pale), var(--ember), var(--gold));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 0 28px rgba(255, 106, 26, 0.18));
+    }
+
+    .contact-sub {
+      font-family: 'Crimson Pro', serif;
+      font-style: italic;
+      font-weight: 200;
+      font-size: 1.15rem;
+      color: var(--chrome-light);
+      opacity: .72;
+      margin-top: 14px;
+      margin-bottom: 46px;
+    }
+
+    .contact-email {
+      font-size: 1rem;
+      font-weight: 500;
+      letter-spacing: .16em;
+      color: var(--ember-soft);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(255, 106, 26, 0.3);
+      padding-bottom: 4px;
+      transition: all .3s;
+    }
+
+    .contact-email:hover {
+      color: var(--gold-pale);
+      border-color: var(--gold-pale);
+      text-shadow: 0 0 18px rgba(255, 150, 70, 0.35);
+    }
+
+    .socials {
+      display: flex;
+      gap: 30px;
+      justify-content: center;
+      margin-top: 46px;
+    }
+
+    .social-link {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--chrome);
+      text-decoration: none;
+      transition: color .3s;
+    }
+
+    .social-link:hover {
+      color: var(--ember-soft);
+    }
+
+    /* ⑦ FOOTER */
+    footer {
+      position: relative;
+      z-index: 10;
+      padding: 46px 60px;
+      background: linear-gradient(to bottom, #1a0500, #0f0300);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(255, 106, 26, 0.07);
+    }
+
+    .footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: .25em;
+      color: var(--ember);
+      opacity: .55;
+    }
+
+    .footer-copy {
+      font-size: .62rem;
+      letter-spacing: .15em;
+      color: var(--chrome);
+      opacity: .38;
+      text-transform: uppercase;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 26px;
+    }
+
+    .footer-links a {
+      font-size: .62rem;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--chrome);
+      opacity: .38;
+      text-decoration: none;
+      transition: opacity .3s, color .3s;
+    }
+
+    .footer-links a:hover {
+      opacity: .8;
+      color: var(--ember-soft);
+    }
+
+    /* REVEAL ANIMATION */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity .8s ease, transform .8s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .d1 {
+      transition-delay: .1s;
+    }
+
+    .d2 {
+      transition-delay: .2s;
+    }
+
+    .d3 {
+      transition-delay: .3s;
+    }
+
+    .d4 {
+      transition-delay: .4s;
+    }
+
+    .d5 {
+      transition-delay: .5s;
+    }
+
+    @media (max-width: 768px) {
+      .guidebook-frame {
+        inset: 10px;
+        border-color: rgba(255, 106, 26, 0.08);
+      }
+
+      .chapter-tracker {
+        display: none;
+      }
+
+      .page-indicator {
+        bottom: 15px;
+        right: 20px;
+      }
+
+      .page-indicator::before {
+        width: 20px;
+      }
+    }
+
+    /* SCI-FI UI OVERLAY */
+    .sci-fi-ui {
+      position: fixed;
+      bottom: 40px;
+      left: 40px;
+      z-index: 100;
+      font-family: monospace;
+      color: #00ffff;
+      text-shadow: 0 0 5px #00ffff;
+      opacity: 0;
+      transition: opacity 0.5s;
+      pointer-events: none;
+    }
+
+    .sci-fi-ui.visible {
+      opacity: 1;
+    }
+
+    .ui-data {
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+      letter-spacing: 2px;
+    }
+
+    .ui-active {
+      color: #ff00ff;
+      text-shadow: 0 0 5px #ff00ff;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.3;
+      }
+    }
+
+    /* TAPE FRICTION SLIDER */
+    .tape-slider-container {
+      position: absolute;
+      right: 5%;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      z-index: 10;
+      opacity: 0;
+      transition: opacity 1s;
+    }
+
+    #s2034.visible .tape-slider-container {
+      opacity: 1;
+    }
+
+    .tape-slider-container label {
+      font-family: monospace;
+      color: #e8b96a;
+      letter-spacing: 2px;
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+    }
+
+    .tape-slider-container input[type=range] {
+      -webkit-appearance: none;
+      width: 150px;
+      height: 4px;
+      background: #3d0c00;
+      outline: none;
+      transform: rotate(-90deg);
+      margin-top: 60px;
+      margin-bottom: 60px;
+    }
+
+    .tape-slider-container input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 15px;
+      height: 25px;
+      background: #ff6a1a;
+      cursor: pointer;
+    }
+
+    /* ============================================
+       DEVELOPER NOTES SYSTEM
+       ============================================ */
+
+    /* Inline tag trigger — sits right next to section label */
+    .dev-note-trigger {
+      display: inline-flex;
+      align-items: center;
+      gap: clamp(4px, 0.5vw, 8px);
+      padding: clamp(3px, 0.4vh, 7px) clamp(8px, 1vw, 16px) clamp(3px, 0.4vh, 7px) clamp(6px, 0.8vw, 12px);
+      background: rgba(255, 106, 26, 0.07);
+      border: 1px solid rgba(255, 106, 26, 0.45);
+      color: var(--ember-soft);
+      font-family: monospace;
+      /* 隨視窗縮放：手機最小 0.55rem，大螢幕最大 0.85rem */
+      font-size: clamp(0.55rem, 0.9vw, 0.85rem);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      cursor: pointer;
+      vertical-align: middle;
+      margin-left: clamp(8px, 1.2vw, 18px);
+      position: relative;
+      top: -1px;
+      transition: background 0.25s, border-color 0.25s, box-shadow 0.25s, transform 0.2s;
+      clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+      white-space: nowrap;
+      z-index: 200;
+    }
+
+    .dev-note-trigger:hover {
+      background: rgba(255, 106, 26, 0.18);
+      border-color: var(--ember);
+      box-shadow: 0 0 14px rgba(255, 106, 26, 0.35), inset 0 0 8px rgba(255, 106, 26, 0.06);
+      transform: translateY(-1px);
+    }
+
+    .dev-note-trigger:active {
+      transform: translateY(0px);
+    }
+
+    /* Pencil icon */
+    .dev-note-trigger::before {
+      content: '✎';
+      font-size: clamp(0.65rem, 1vw, 1rem);
+      color: var(--ember);
+      animation: notePulse 2.8s ease-in-out infinite;
+    }
+
+    @keyframes notePulse {
+
+      0%,
+      100% {
+        opacity: 0.55;
+      }
+
+      50% {
+        opacity: 1;
+        text-shadow: 0 0 8px var(--ember);
+      }
+    }
+
+    /* ---- Centered floating modal ---- */
+    #dev-notes-panel {
+      position: fixed;
+      inset: 0;
+      z-index: 9000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      /* fade wrapper */
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    #dev-notes-panel.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .dnp-inner {
+      position: relative;
+      /* 4:3 比例：以視窗高度 80vh 為基準，寬度 = 80vh × 4/3 */
+      height: min(80vh, calc(92vw * 3 / 4));
+      width: min(calc(80vh * 4 / 3), 92vw);
+      aspect-ratio: 4 / 3;
+      background: linear-gradient(160deg, rgba(10, 2, 0, 0.98) 0%, rgba(22, 6, 0, 0.98) 100%);
+      border: 1px solid rgba(255, 106, 26, 0.35);
+      box-shadow:
+        0 0 0 1px rgba(255, 106, 26, 0.08),
+        0 8px 60px rgba(0, 0, 0, 0.85),
+        0 0 80px rgba(255, 106, 26, 0.1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      /* pop-up scale animation */
+      transform: scale(0.88) translateY(12px);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      clip-path: polygon(18px 0%, 100% 0%, calc(100% - 18px) 100%, 0% 100%);
+    }
+
+    #dev-notes-panel.open .dnp-inner {
+      transform: scale(1) translateY(0);
+    }
+
+    /* Scanline texture inside panel */
+    .dnp-inner::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(to bottom,
+          transparent 0px,
+          transparent 2px,
+          rgba(255, 106, 26, 0.015) 2px,
+          rgba(255, 106, 26, 0.015) 4px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Panel header */
+    .dnp-header {
+      position: relative;
+      z-index: 1;
+      padding: 22px 24px 18px;
+      border-bottom: 1px solid rgba(255, 106, 26, 0.15);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .dnp-header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .dnp-label {
+      font-family: monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.3em;
+      color: var(--ember);
+      opacity: 0.65;
+      text-transform: uppercase;
+    }
+
+    .dnp-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.25rem;
+      letter-spacing: 0.12em;
+      color: var(--gold-pale);
+      line-height: 1.1;
+    }
+
+    .dnp-page-id {
+      font-family: monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      color: var(--chrome);
+      opacity: 0.45;
+      margin-top: 2px;
+    }
+
+    /* Close button */
+    .dnp-close {
+      background: none;
+      border: 1px solid rgba(255, 106, 26, 0.25);
+      color: var(--chrome);
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+      transition: all 0.25s;
+      clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+    }
+
+    .dnp-close:hover {
+      border-color: var(--ember);
+      color: var(--ember-soft);
+      box-shadow: 0 0 12px rgba(255, 106, 26, 0.25);
+    }
+
+    /* Panel body — scrollable note area */
+    .dnp-body {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 106, 26, 0.25) transparent;
+    }
+
+    .dnp-body::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .dnp-body::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .dnp-body::-webkit-scrollbar-thumb {
+      background: rgba(255, 106, 26, 0.25);
+      border-radius: 2px;
+    }
+
+    /* Empty-state placeholder */
+    .dnp-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 14px;
+      opacity: 0.28;
+    }
+
+    .dnp-empty-icon {
+      font-size: 2.4rem;
+      filter: grayscale(1);
+    }
+
+    .dnp-empty-text {
+      font-family: monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      color: var(--chrome);
+      text-align: center;
+      line-height: 1.8;
+    }
+
+    /* The actual note content */
+    .dnp-note-content {
+      font-family: 'Crimson Pro', serif;
+      font-weight: 300;
+      font-size: clamp(1.05rem, 1.2vw, 1.25rem);
+      color: var(--chrome-light);
+      line-height: 1.95;
+      white-space: pre-wrap;
+    }
+
+    .dnp-note-content h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(1.1rem, 1.4vw, 1.4rem);
+      letter-spacing: 0.14em;
+      color: var(--ember-soft);
+      margin-bottom: 12px;
+      margin-top: 24px;
+    }
+
+    .dnp-note-content h3:first-child {
+      margin-top: 0;
+    }
+
+    .dnp-note-content p {
+      margin-bottom: 14px;
+      opacity: 0.82;
+    }
+
+    .dnp-note-content code {
+      font-family: monospace;
+      font-size: 0.8rem;
+      background: rgba(255, 106, 26, 0.08);
+      border: 1px solid rgba(255, 106, 26, 0.15);
+      padding: 1px 6px;
+      color: var(--ember-soft);
+      border-radius: 2px;
+    }
+
+    /* Panel footer with timestamp */
+    .dnp-footer {
+      position: relative;
+      z-index: 1;
+      padding: 14px 24px;
+      border-top: 1px solid rgba(255, 106, 26, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .dnp-timestamp {
+      font-family: monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.15em;
+      color: var(--chrome);
+      opacity: 0.3;
+    }
+
+    .dnp-status {
+      font-family: monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.18em;
+      color: var(--ember);
+      opacity: 0.5;
+    }
+
+    /* Dim backdrop when panel is open */
+    #dev-notes-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 8999;
+      background: rgba(0, 0, 0, 0);
+      pointer-events: none;
+      transition: background 0.4s;
+    }
+
+    #dev-notes-backdrop.active {
+      background: rgba(0, 0, 0, 0.38);
+      pointer-events: all;
+    }
+  </style>
+</head>
+
+<body>
+
+  <canvas id="ripple-canvas"
+    style="position: fixed; inset: 0; z-index: 1; pointer-events: none; mix-blend-mode: screen;"></canvas>
+  <div class="sci-fi-ui" id="sciFiUI">
+    <div class="ui-data">Salinity: <span id="uiSalinity">3.5%</span></div>
+    <div class="ui-data">Biolume: <span class="ui-active">ACTIVE</span></div>
+    <div class="ui-data">Freq: <span id="uiFreq">124</span> Hz</div>
+  </div>
+
+  <div class="smoke-layer" id="smokeLayer"></div>
+  <svg class="wave-svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"
+    style="mix-blend-mode: screen;">
+    <defs>
+      <linearGradient id="wg" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#0a0026" stop-opacity="0" />
+        <stop offset="30%" stop-color="#6000ff" stop-opacity="0.8" />
+        <stop offset="50%" stop-color="#00ffff" stop-opacity="1" />
+        <stop offset="70%" stop-color="#9900ff" stop-opacity="0.9" />
+        <stop offset="100%" stop-color="#0a0026" stop-opacity="0" />
+      </linearGradient>
+    </defs>
+    <path id="w1" fill="none" stroke="url(#wg)" stroke-width="1.2" />
+    <path id="w2" fill="none" stroke="url(#wg)" stroke-width=".8" opacity=".6" />
+    <path id="w3" fill="none" stroke="url(#wg)" stroke-width=".5" opacity=".4" />
+    <path id="w4" fill="none" stroke="url(#wg)" stroke-width=".6" opacity=".3" />
+  </svg>
+
+  <div class="guidebook-frame"></div>
+  <div class="chapter-tracker" id="chapterTracker">00 — PREFACE</div>
+  <div class="page-indicator">
+    <span class="current-page" id="currentPage">01</span>
+    <span class="total-pages">/ 06</span>
+  </div>
+
+  <div class="mars-scroll-wrapper">
+    <div class="mars-breathing-layer">
+      <div class="mars-spin-layer">
+        <img src="mars.png" alt="Mars" class="mars-2d-image mars-base">
+        <img src="marsnosea.png" alt="Mars No Sea" class="mars-2d-image mars-overlay">
+      </div>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">MARS</div>
+    <ul class="nav-links">
+      <li><a href="#s2036">2036</a></li>
+      <li><a href="#s2034">2034</a></li>
+      <li><a href="#s2032">2032</a></li>
+      <li><a href="#s2030">2030</a></li>
+      <li><a href="#s2028">2028</a></li>
+      <li><a href="#s2026">2026</a></li>
+    </ul>
+  </nav>
+
+  <section id="hero">
+    <h1 class="hero-title reveal d1" id="heroTitle">2036<br>火星造海計畫<br>導覽手冊</h1>
+    <div class="hero-sub reveal d2">許惇堯 Obi</div>
+  </section>
+
+  <section id="s2036">
+    <div class="section-label reveal">2036： 生物螢光發光。<button class="dev-note-trigger" data-page="s2036"
+        aria-label="開啟開發者筆記">DEV NOTE</button></div>
+    <div class="tech-content reveal d1">
+      <h2>磁場耦合螢光蛋白工程</h2>
+      <p>Magnetic-Coupled Photoprotein Engineering</p>
+      <div class="tech-details">
+        <p>透過合成生物技術，將螢光素酶（Luciferase）與火星微弱的全球磁脈動進行「頻率鎖定」。當海中的基改合成藍藻感應到地磁變化時，會觸發離子通道開放，產生發光反應。</p>
+        <p>即時調整海水的養分濃度（觸媒噴灑）以維持亮度恆定。讓這片海洋帶有電壓干擾感的呼吸節奏。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="s2034" style="position: relative; overflow: hidden;">
+    <canvas id="rain-canvas"
+      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; mix-blend-mode: screen;"></canvas>
+
+    <div class="tape-slider-container">
+      <label for="tapeFriction">TAPE FRICTION</label>
+      <input type="range" id="tapeFriction" min="1" max="10" value="3">
+    </div>
+
+    <div class="section-label reveal" style="z-index: 1;">2034： 超音波降雨技術。<button class="dev-note-trigger"
+        data-page="s2034" aria-label="開啟開發者筆記">DEV NOTE</button></div>
+    <div class="tech-content reveal d1" style="z-index: 1;">
+      <h2>超音波相位陣列降雨</h2>
+      <p>Phased-Array Sonic Precipitation</p>
+      <div class="tech-details">
+        <p>利用部署在軌道上的衛星陣列，向大氣層發射精準的超音波束。這些聲波產生的物理振動會強迫懸浮在冷空氣中的微米級冰晶相互碰撞、合併，克服火星低重力落成雨滴。</p>
+        <p>降雨系統宛如一個巨大的音響，讓水滴落下的頻率帶有「磁帶刮痕」的物理停頓感。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="s2032" style="position: relative; overflow: hidden; background: #000; color: #fff;">
+    <!-- Hidden layer (Flashlight target) -->
+    <div id="flashlight-layer"
+      style="position: absolute; inset: 0; background-image: radial-gradient(circle 2px at center, #333 1px, transparent 1px); background-size: 20px 20px; z-index: 0; -webkit-mask-image: radial-gradient(circle 150px at 50% 50%, black 10%, transparent 100%); mask-image: radial-gradient(circle 150px at 50% 50%, black 10%, transparent 100%); pointer-events: none; opacity: 0; transition: opacity 0.5s;">
+      <div
+        style="position: absolute; top: 15%; left: 55%; font-family: monospace; color: #fff; font-size: 2rem; transform: rotate(-15deg); border: 1px solid #fff; padding: 20px;">
+        ZONE B: VOID</div>
+      <div
+        style="position: absolute; bottom: 15%; left: 40%; font-family: monospace; color: #fff; font-size: 2rem; transform: rotate(10deg); border: 1px dashed #fff; padding: 20px;">
+        EVASION ROUTE</div>
+      <div
+        style="position: absolute; top: 25%; right: 8%; width: 150px; height: 150px; border-radius: 50%; border: 2px solid #fff;">
+      </div>
+    </div>
+
+    <div class="section-label reveal" style="z-index: 1; border-color: rgba(255,255,255,0.3); color: #ccc;">2032：
+      響應式負空間建築。<button class="dev-note-trigger" data-page="s2032" aria-label="開啟開發者筆記"
+        style="border-color:rgba(255,255,255,0.5); color:#ccc;">DEV NOTE</button></div>
+    <div class="tech-content reveal d1" style="z-index: 1; text-shadow: 0 0 10px #000;">
+      <h2 style="color: #fff;">神經感應響應式建築</h2>
+      <p style="color: #aaa;">Reactive Neuro-Architecture</p>
+      <div class="tech-details" style="color: #888;">
+        <p>飛船內壁由「智能液態金屬纖維」組成，與乘員的腦電波傳感器連動。系統會根據區域內的心理壓力，自動調整牆面的透明度、光線折射率與空間幾何維度。</p>
+        <p>這是社交避難演算法。當感測到有人進入尷尬狀態時，牆面會自動產生折射偏轉，創造出物理意義上的「視線死角」。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="s2030" style="position: relative; overflow: hidden; background: #3d0000; transition: filter 0.2s;">
+    <!-- Plasma Sky & Oscilloscope -->
+    <div id="plasma-bg"
+      style="position: absolute; inset: 0; background: linear-gradient(180deg, #500 0%, #100 100%); z-index: 0; transition: filter 0.1s;">
+    </div>
+    <canvas id="osc-canvas"
+      style="position: absolute; top: 0; left: 0; width: 100%; height: 50%; z-index: 0; cursor: ew-resize; mix-blend-mode: screen;"></canvas>
+
+    <div class="section-label reveal" style="z-index: 1;">2030： 電漿共振染色。<button class="dev-note-trigger"
+        data-page="s2030" aria-label="開啟開發者筆記">DEV NOTE</button></div>
+    <div class="tech-content reveal d1" style="z-index: 1;">
+      <h2>受控電漿共振發光技術</h2>
+      <p>Controlled Plasma Resonance Luminescence</p>
+      <div class="tech-details">
+        <p>由於火星缺乏強磁場保護，AI 部署了數萬個微型電離層導航衛星。這些衛星向大氣高層發射無線電波，激發稀薄的氣體原子產生電漿化反應。副產品是讓天空產生類似極光的發光現象。</p>
+        <p>拖動上方示波器曲線，手動調整頻率以改變天空的色彩頻段。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="s2028" style="position: relative; overflow: hidden;">
+    <!-- Error Wall Background -->
+    <div id="error-wall"
+      style="position: absolute; inset: 0; background-color: #000; font-family: monospace; font-size: 1.5vw; word-break: break-all; color: #ff0000; line-height: 1; opacity: 0.3; z-index: 0; user-select: none; cursor: pointer;">
+    </div>
+
+    <div class="section-label reveal" style="z-index: 1; color: #fff;">2028： 量子機率變量。<button class="dev-note-trigger"
+        data-page="s2028" aria-label="開啟開發者筆記" style="border-color:rgba(255,255,255,0.4); color:#eee;">DEV NOTE</button>
+    </div>
+    <div class="tech-content reveal d1" style="z-index: 1;">
+      <h2 style="color: #fff;">蒙地卡羅量子糾纏模擬</h2>
+      <p style="color: #ff3300;">Quantum Probabilistic Inversion</p>
+      <div class="tech-details">
+        <p>在量子計算機中運行數億個火星地球化的平行現實。當模擬陷入對稱性破缺的死循環時，需要引入一個完全不可預測的外部隨機源（Seed of Chaos）來打破邏輯僵局。</p>
+        <p>系統已陷入 ERROR: LOGIC LOOP。<br>請點擊背景錯誤代碼注入混亂變量。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="s2026" style="position: relative; overflow: hidden; background: #e3d5c8;">
+    <!-- Napkin background & Coffee stain -->
+    <svg width="0" height="0">
+      <filter id="coffee-spread">
+        <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="0" xChannelSelector="R" yChannelSelector="G"
+          id="coffee-displace" />
+        <feGaussianBlur stdDeviation="0" id="coffee-blur" />
+      </filter>
+    </svg>
+    <div
+      style="position: absolute; inset: 0; background-image: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.2) 100%), url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%23e3d5c8%22/%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%22 height=%22100%22 filter=%22url(%23n)%22 opacity=%220.1%22/%3E%3C/svg%3E'); z-index: 0;">
+    </div>
+
+    <img src="coffee.png" alt="Coffee Stain" id="coffee-image"
+      style="position: absolute; top: 85%; left: 85%; transform: translate(-50%, -50%); width: 75vmin; height: 75vmin; object-fit: contain; mix-blend-mode: multiply; filter: url(#coffee-spread); z-index: 0; cursor: pointer; transition: transform 2s ease-out;">
+
+    <div class="section-label reveal" style="z-index: 1; color: #1a0a00; border-color: rgba(26, 10, 0, 0.4);">2026：
+      願景定義。<button class="dev-note-trigger" data-page="s2026" aria-label="開啟開發者筆記"
+        style="border-color:rgba(26,10,0,0.5); color:#1a0a00;">DEV NOTE</button></div>
+    <div class="tech-content reveal d1" style="z-index: 1;">
+      <h2 style="color: #1a0a00;">多模態語義空間導航</h2>
+      <p style="color: #3d1a00;">Multi-modal Latent Space Navigation</p>
+      <div class="tech-details" style="color: #2a0f00;">
+        <p>透過 AGI 理解人類的抽象情感。技術不再是寫 Code，而是透過「權重調節（Weight Tuning）」，將人類的感官偏見映射到 AI 的潛在空間中，確保技術發展不會偏離人性的底色。</p>
+        <p>一切始於這張帶有咖啡漬的藍圖。將滑鼠懸停於咖啡漬上，觀察其在纖維間的擴散。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="cta">
+    <div class="cta-inner" style="display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
+      <div class="terminal-container" style="text-align:center;">
+        <div class="terminal-text" id="ctaTerminal"
+          style="font-family: monospace; font-size: 1.5rem; color: #ff3300; margin-bottom: 20px;">Click "Delete" to
+          destroy the file...</div>
+        <button class="terminal-btn" id="ctaBtn"
+          style="background: transparent; border: 1px solid #ff3300; color: #ff3300; padding: 10px 30px; font-family: monospace; font-size: 1.2rem; cursor: pointer; transition: all 0.3s;">DELETE</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- DEV NOTES BACKDROP & PANEL -->
+  <div id="dev-notes-backdrop"></div>
+  <div id="dev-notes-panel" role="dialog" aria-label="開發者筆記">
+    <div class="dnp-inner">
+      <div class="dnp-header">
+        <div class="dnp-header-left">
+          <span class="dnp-label">// DEV NOTE</span>
+          <div class="dnp-title" id="dnpTitle">— —</div>
+          <div class="dnp-page-id" id="dnpPageId">PAGE_ID: —</div>
+        </div>
+        <button class="dnp-close" id="dnpClose" aria-label="關閉">✕</button>
+      </div>
+      <div class="dnp-body" id="dnpBody">
+        <!-- content injected by JS -->
+      </div>
+      <div class="dnp-footer">
+        <span class="dnp-timestamp" id="dnpTimestamp">MARS_OS v2.4.1 // 2026-05-06</span>
+        <span class="dnp-status">● DRAFT</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑦ FOOTER -->
+  <footer>
+    <div class="footer-logo">MARS</div>
+    <div class="footer-copy">© 2026 Mars Studio. All rights reserved.</div>
+    <div class="footer-links">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Colophon</a>
+    </div>
+  </footer>
+
+  <script>
+    // 2. SMOKE BLOBS
+    (function () {
+      const layer = document.getElementById('smokeLayer');
+      [
+        { w: 700, h: 500, t: '8%', l: '3%', c: 'rgba(180,50,0,0.11)', dur: '22s', del: '0s' },
+        { w: 500, h: 600, t: '28%', l: '58%', c: 'rgba(140,70,0,0.09)', dur: '28s', del: '-8s' },
+        { w: 600, h: 400, t: '58%', l: '18%', c: 'rgba(200,100,0,0.08)', dur: '18s', del: '-4s' },
+        { w: 420, h: 520, t: '4%', l: '68%', c: 'rgba(100,30,0,0.13)', dur: '25s', del: '-12s' },
+        { w: 550, h: 350, t: '72%', l: '52%', c: 'rgba(160,60,0,0.07)', dur: '20s', del: '-6s' },
+        { w: 300, h: 300, t: '18%', l: '38%', c: 'rgba(190,145,75,0.045)', dur: '30s', del: '-3s' },
+        { w: 280, h: 420, t: '48%', l: '8%', c: 'rgba(210,165,100,0.035)', dur: '26s', del: '-15s' },
+      ].forEach(b => {
+        const el = document.createElement('div');
+        el.className = 'smoke-blob';
+        el.style.cssText = `width:${b.w}px;height:${b.h}px;top:${b.t};left:${b.l};background:${b.c};animation-duration:${b.dur};animation-delay:${b.del};`;
+        layer.appendChild(el);
+      });
+    })();
+
+    // 3. SVG WAVE RIPPLES
+    (function () {
+      const paths = [
+        { el: document.getElementById('w1'), amp: 38, freq: .14, y: 250, phase: 0, speed: .45 },
+        { el: document.getElementById('w2'), amp: 28, freq: .11, y: 480, phase: 60, speed: .35 },
+        { el: document.getElementById('w3'), amp: 22, freq: .17, y: 680, phase: 120, speed: .55 },
+        { el: document.getElementById('w4'), amp: 16, freq: .09, y: 820, phase: 200, speed: .28 },
+      ];
+      let t = 0;
+      function wave() {
+        t += 1;
+        paths.forEach(p => {
+          let d = `M 0 ${p.y}`;
+          for (let x = 0; x <= 1440; x += 10) {
+            const angle = (x * p.freq + p.phase + t * p.speed) * Math.PI / 180;
+            const y = p.y + Math.sin(angle) * p.amp + Math.sin(angle * 1.7 + 1) * p.amp * .38;
+            d += ` L ${x} ${y}`;
+          }
+          p.el.setAttribute('d', d);
+        });
+        requestAnimationFrame(wave);
+      }
+      wave();
+    })();
+
+    // 4. SCROLL REVEAL
+    (function () {
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) e.target.classList.add('visible');
+        });
+      }, { threshold: .5 }); /* 將閾值從 0.1 改為 0.5 */
+
+      document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+    })();
+
+    // 5. HERO MOUSE PARALLAX
+    (function () {
+      const hero = document.getElementById('hero');
+      const title = document.getElementById('heroTitle');
+      hero.addEventListener('mousemove', e => {
+        const dx = (e.clientX - window.innerWidth / 2) / window.innerWidth;
+        const dy = (e.clientY - window.innerHeight / 2) / window.innerHeight;
+        title.style.transform = `translate(${dx * 14}px,${dy * 9}px)`;
+      });
+      hero.addEventListener('mouseleave', () => title.style.transform = '');
+    })();
+
+    // 6. CHAPTER TRACKER & PAGE INDICATOR
+    (function () {
+      const sections = document.querySelectorAll('section');
+      const chapterTracker = document.getElementById('chapterTracker');
+      const currentPage = document.getElementById('currentPage');
+      const totalPagesSpan = document.querySelector('.total-pages');
+
+      totalPagesSpan.textContent = '/ 08'; // Update total pages
+
+      const sectionNames = {
+        'hero': '00 — ENTRANCE',
+        's2036': '01 — 2036: BIOLUMINESCENCE',
+        's2034': '02 — 2034: SONIC RAIN',
+        's2032': '03 — 2032: NEURO-ARCHITECTURE',
+        's2030': '04 — 2030: PLASMA RESONANCE',
+        's2028': '05 — 2028: QUANTUM INVERSION',
+        's2026': '06 — 2026: LATENT SPACE',
+        'cta': '07 — CALL TO ACTION'
+      };
+
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            const index = Array.from(sections).indexOf(e.target);
+            currentPage.textContent = '0' + (index + 1);
+            chapterTracker.textContent = sectionNames[e.target.id] || '';
+
+            // Update active state in nav
+            document.querySelectorAll('.nav-links a').forEach(link => {
+              if (link.getAttribute('href') === '#' + e.target.id) {
+                link.style.color = '#ff3300';
+              } else {
+                link.style.color = '';
+              }
+            });
+          }
+        });
+      }, { threshold: 0.5 });
+
+      sections.forEach(sec => obs.observe(sec));
+    })();
+
+    // 7. CTA TERMINAL GLITCH
+    (function () {
+      const btn = document.getElementById('ctaBtn');
+      const term = document.getElementById('ctaTerminal');
+      if (!btn) return;
+
+      btn.addEventListener('mouseenter', () => {
+        btn.textContent = 'DECODE';
+        btn.style.color = '#00ffcc';
+        btn.style.borderColor = '#00ffcc';
+        term.style.color = '#00ffcc';
+      });
+      btn.addEventListener('mouseleave', () => {
+        btn.textContent = 'DELETE';
+        btn.style.color = '#ff3300';
+        btn.style.borderColor = '#ff3300';
+        term.style.color = '#ff3300';
+      });
+
+      btn.addEventListener('click', () => {
+        document.querySelector('.mars-scroll-wrapper').style.display = 'none';
+        term.textContent = 'RESTORED: 2026_ORIGIN_CODE';
+        term.style.animation = 'glitch 0.2s infinite';
+        document.body.style.filter = 'contrast(200%) invert(100%) hue-rotate(90deg)';
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          location.reload();
+        }, 1000);
+      });
+    })();
+
+    // 8. SECTION 1: NEON RIPPLES & UI
+    (function () {
+      const canvas = document.getElementById('ripple-canvas');
+      const ctx = canvas.getContext('2d');
+      let ripples = [];
+
+      function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+      resize(); window.addEventListener('resize', resize);
+
+      let lastX = -999, lastY = -999;
+      window.addEventListener('mousemove', e => {
+        if (window.scrollY < window.innerHeight * 2) {
+          const dist = Math.hypot(e.clientX - lastX, e.clientY - lastY);
+          if (dist > 40) {
+            ripples.push({ x: e.clientX, y: e.clientY, r: 0, alpha: 1 });
+            lastX = e.clientX;
+            lastY = e.clientY;
+          }
+        }
+      });
+
+      function animateRipples() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let i = 0; i < ripples.length; i++) {
+          const r = ripples[i];
+          ctx.beginPath();
+          ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(180, 50, 255, ${r.alpha})`;
+          ctx.lineWidth = 2 + (1 - r.alpha) * 3;
+          ctx.stroke();
+
+          r.r += 2;
+          r.alpha -= 0.02;
+
+          if (r.alpha <= 0) {
+            ripples.splice(i, 1);
+            i--;
+          }
+        }
+        requestAnimationFrame(animateRipples);
+      }
+      animateRipples();
+
+      const ui = document.getElementById('sciFiUI');
+      const salinity = document.getElementById('uiSalinity');
+      const freq = document.getElementById('uiFreq');
+
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > window.innerHeight * 0.5 && window.scrollY < window.innerHeight * 1.5) {
+          ui.classList.add('visible');
+        } else {
+          ui.classList.remove('visible');
+        }
+      });
+
+      setInterval(() => {
+        if (ui.classList.contains('visible')) {
+          salinity.textContent = (3.4 + Math.random() * 0.2).toFixed(2) + '%';
+          freq.textContent = Math.floor(120 + Math.random() * 10);
+        }
+      }, 500);
+    })();
+
+    // 9. SECTION 2: 8-BIT RAIN & TAPE SLIDER
+    (function () {
+      const canvas = document.getElementById('rain-canvas');
+      const ctx = canvas.getContext('2d');
+      const slider = document.getElementById('tapeFriction');
+      if (!canvas || !slider) return;
+
+      function resize() {
+        const sec = document.getElementById('s2034');
+        canvas.width = sec.offsetWidth;
+        canvas.height = sec.offsetHeight;
+      }
+      resize(); window.addEventListener('resize', resize);
+
+      let rainDrops = [];
+      let frictionValue = 3;
+
+      slider.addEventListener('input', (e) => {
+        frictionValue = parseInt(e.target.value);
+      });
+
+      function animateRain() {
+        ctx.fillStyle = `rgba(15, 3, 0, ${0.1 + (frictionValue * 0.05)})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        if (Math.random() < 0.2 + (frictionValue * 0.05)) {
+          rainDrops.push({
+            x: Math.random() * canvas.width,
+            y: 0,
+            len: 10 + Math.random() * 20,
+            speed: 15 + Math.random() * 10 - frictionValue,
+            thick: 1 + Math.random() * 2
+          });
+        }
+
+        ctx.fillStyle = '#ff9a4d';
+        for (let i = 0; i < rainDrops.length; i++) {
+          const drop = rainDrops[i];
+
+          if (Math.random() > frictionValue * 0.08) {
+            drop.y += drop.speed;
+          } else {
+            drop.x += (Math.random() - 0.5) * frictionValue * 2;
+          }
+
+          ctx.fillRect(drop.x, drop.y, drop.thick, drop.len);
+
+          if (drop.y > canvas.height) {
+            rainDrops.splice(i, 1);
+            i--;
+          }
+        }
+
+        requestAnimationFrame(animateRain);
+      }
+      animateRain();
+    })();
+
+    // 10. SECTION 3: FLASHLIGHT MASK
+    (function () {
+      const s2032 = document.getElementById('s2032');
+      const flashlightLayer = document.getElementById('flashlight-layer');
+      if (!s2032 || !flashlightLayer) return;
+
+      let inSection = false;
+
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            flashlightLayer.style.opacity = '1';
+            inSection = true;
+          } else {
+            flashlightLayer.style.opacity = '0';
+            inSection = false;
+          }
+        });
+      }, { threshold: 0.1 });
+      obs.observe(s2032);
+
+      window.addEventListener('mousemove', e => {
+        if (!inSection) return;
+        const rect = s2032.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        flashlightLayer.style.webkitMaskImage = `radial-gradient(circle 200px at ${x}px ${y}px, black 20%, transparent 100%)`;
+        flashlightLayer.style.maskImage = `radial-gradient(circle 200px at ${x}px ${y}px, black 20%, transparent 100%)`;
+      });
+    })();
+
+    // 11. SECTION 4: OSCILLOSCOPE
+    (function () {
+      const canvas = document.getElementById('osc-canvas');
+      const plasmaBg = document.getElementById('plasma-bg');
+      if (!canvas || !plasmaBg) return;
+      const ctx = canvas.getContext('2d');
+
+      let width, height;
+      function resize() {
+        const sec = document.getElementById('s2030');
+        width = sec.offsetWidth;
+        height = sec.offsetHeight / 2;
+        canvas.width = width;
+        canvas.height = height;
+      }
+      resize(); window.addEventListener('resize', resize);
+
+      let frequency = 0.02;
+      let phase = 0;
+      let isDragging = false;
+      let lastX = 0;
+
+      canvas.addEventListener('mousedown', e => { isDragging = true; lastX = e.clientX; });
+      window.addEventListener('mouseup', () => { isDragging = false; });
+      window.addEventListener('mousemove', e => {
+        if (!isDragging) return;
+        const delta = e.clientX - lastX;
+        lastX = e.clientX;
+        frequency += delta * 0.0001;
+        frequency = Math.max(0.005, Math.min(0.1, frequency));
+
+        const hue = (frequency - 0.005) * (360 / 0.095);
+        plasmaBg.style.filter = `hue-rotate(${hue}deg) brightness(1.5)`;
+      });
+
+      function drawOsc() {
+        ctx.clearRect(0, 0, width, height);
+        ctx.beginPath();
+        for (let x = 0; x < width; x += 5) {
+          const noise = (Math.random() - 0.5) * 10;
+          const y = height / 2 + Math.sin(x * frequency + phase) * 50 + noise;
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = '#00ffcc';
+        ctx.lineWidth = 2;
+        ctx.shadowColor = '#00ffcc';
+        ctx.shadowBlur = 10;
+        ctx.stroke();
+
+        phase += 0.1;
+        requestAnimationFrame(drawOsc);
+      }
+      drawOsc();
+    })();
+
+    // 12. SECTION 5: ERROR WALL
+    (function () {
+      const wall = document.getElementById('error-wall');
+      if (!wall) return;
+
+      let errText = '';
+      for (let i = 0; i < 1500; i++) {
+        errText += 'ERROR: LOGIC LOOP ';
+      }
+      wall.textContent = errText;
+
+      let resolved = false;
+      wall.addEventListener('click', () => {
+        if (resolved) return;
+        resolved = true;
+        wall.style.color = '#0088ff';
+        let fixText = '';
+        for (let i = 0; i < 1500; i++) {
+          fixText += 'DATA STREAM NORMALIZED ';
+        }
+        wall.textContent = fixText;
+        wall.style.opacity = '0.1';
+        wall.style.animation = 'float 4s ease-in-out infinite';
+      });
+
+      setInterval(() => {
+        if (!resolved) {
+          wall.style.transform = `translate(${Math.random() * 4 - 2}px, ${Math.random() * 4 - 2}px)`;
+        }
+      }, 50);
+    })();
+
+    // 13. SECTION 6: COFFEE STAIN SPREAD
+    (function () {
+      const coffee = document.getElementById('coffee-image');
+      const displace = document.getElementById('coffee-displace');
+      const blur = document.getElementById('coffee-blur');
+      if (!coffee || !displace || !blur) return;
+
+      let scale = 0;
+      let targetScale = 0;
+
+      coffee.addEventListener('mouseenter', () => { targetScale = 30; });
+      coffee.addEventListener('mouseleave', () => { targetScale = 0; });
+
+      function animateCoffee() {
+        scale += (targetScale - scale) * 0.05;
+        displace.setAttribute('scale', scale);
+        blur.setAttribute('stdDeviation', scale * 0.1);
+        if (scale > 0.1 || targetScale > 0) {
+          coffee.style.transform = `translate(-50%, -50%) scale(${1 + scale * 0.005})`;
+        }
+        requestAnimationFrame(animateCoffee);
+      }
+      animateCoffee();
+    })();
+
+    // 14. DEVELOPER NOTES SYSTEM
+    (function () {
+      /* ---- Per-page note data ---- */
+      const NOTES = {
+        hero: {
+          title: '封面 — ENTRANCE',
+          content: ''
+        },
+        s2036: {
+          title: '2036.05.06 火星殖民地',
+          content: `<p>來到火星的第三年，人造海域終於「活」過來了。</p>
+<p>今晚，我完成了最關鍵的調試——將合成藍藻的螢光反應，與火星極其微弱的磁脈動進行「頻率鎖定」。這項技術的核心，其實就是簡單的頻率分析。看著螢幕上跳動的數據波形，我手指敲下最後一行指令，讓養分噴灑的濃度隨磁場同步。</p>
+<p>當第一波地磁脈衝掠過水面，原本靜謐的海水開始閃爍起幽藍的光。那不是隨機的閃爍，而是一種帶有「電壓干擾感」的律動。這種破碎的節奏，這種讓人心跳加速的「氛圍感」才是靈魂。</p>`
+        },
+        s2034: {
+          title: '2034.11.12 軌道觀測站',
+          content: `<p>火星終於下雨了，雖然這場雨是用「聲音」震出來的。</p>
+<p>在低重力環境下讓水滴落下簡直是物理惡夢，但我習慣把這種龐雜的大問題拆解成一個個模組。團隊那邊提出了一個要求：他們不想要平滑的雨聲，他們想要雨滴落下時帶有一種停頓感。我將超音波束重新建模，把連續的物理振動切分成細小的數位區塊。現在，窗外落下的每一滴水，都精準地踩在我設計的節奏點上。只要邏輯夠清晰，再瘋狂的創意都能落地。</p>`
+        },
+        s2032: {
+          title: '2032.08.20 遠征艦隊居住艙',
+          content: `<p>今天終於把「社交避難演算法」寫進了居住艙的系統裡。</p>
+<p>我還蠻喜歡看《少年願望事務所》這類節目的。我發現，無論在哪個世代，人類在社交壓力過大時，最渴望的往往不是安慰，而是能瞬間「消失」的權利。</p>
+<p>我監測乘員的情緒波動。當感測到有人進入尷尬或焦慮狀態時，演算法會為他製造出一個即時的視線死角。我想最好的設計，往往源於對受眾最真實煩惱的理解。比起蓋一座華麗的建築，我更在意如何讀懂使用者的不安。</p>`
+        },
+        s2030: {
+          title: '2030.03.15 大氣觀測站',
+          content: `<p>今天火星的天空，是我調出來的顏色。</p>
+<p>為了保護地面通訊，AI 部署了數萬顆微型衛星，而我的工作是利用「電漿共振」技術，將大氣層變成一張巨大的畫布。這聽起來很科幻，但對我來說，這和我在大學時玩 ESP32 或在 Unity 裡做遊戲沒什麼兩樣。</p>
+<p>我設計了一個直覺的交互界面，將繁雜的無線電波數據簡化成一條示波器曲線。只要輕輕拖動曲線、改變頻率，高空的電漿化反應就會隨之改變，讓天空從螢光綠轉化為迷幻的紫。</p>`
+        },
+        s2028: {
+          title: '2028.02.14 量子運算中心',
+          content: `<p>模擬系統又當機了，螢幕上滿是紅色的 ERROR: LOGIC LOOP。</p>
+<p>即便用了最強大的量子電腦，純粹的邏輯運算偶爾還是會陷入對稱性的死胡同。這就像實驗做久了，腦袋容易被公式給框住。</p>
+<p>我點擊了那些跳動的錯誤代碼。這一刻，我想起昨晚看的奇幻小說與動漫裡，那些脫離現實框架的構想與荒誕創意，或許都是不錯的「隨機種子」。當我把這些故事注入程序時，原本凝滯的邏輯僵局瞬間瓦解。對我來說，二次元的想像力就是我最重要的靈感資料庫。</p>`
+        },
+        s2026: {
+          title: '2026.05.06 陽明交大實驗室',
+          content: `<p>今天下午，我在桌上看到那張沾了咖啡漬的舊藍圖。</p>
+<p>那是我們最初設計 AGI 語義導航的草稿。看著咖啡液在紙張纖維間不規則地擴散、滲透，我突然意識到，這就是我想追求的目標：無法被完全公式化的美感。</p>
+<p>身為電機系的學生，我熟悉如何調校參數，但雙修「說故事」的訓練，讓我更想去改變那種看不見的「情感權重」。我拿起筆，在咖啡漬旁邊標註了一個新的參數。我不只是在寫程式，我是一個理性的邏輯建構者，也是一個感性的敘事者。這張帶有瑕疵的藍圖就是我的起點。</p>`
+        },
+        cta: {
+          title: 'TERMINAL — 終端機',
+          content: ''
+        }
+      };
+
+      const panel = document.getElementById('dev-notes-panel');
+      const backdrop = document.getElementById('dev-notes-backdrop');
+      const closeBtn = document.getElementById('dnpClose');
+      const titleEl = document.getElementById('dnpTitle');
+      const pageIdEl = document.getElementById('dnpPageId');
+      const bodyEl = document.getElementById('dnpBody');
+      const tsEl = document.getElementById('dnpTimestamp');
+
+      let isOpen = false;
+
+      /* Render note for a given page id */
+      function openNote(pageId) {
+        const note = NOTES[pageId] || { title: '—', content: '' };
+
+        titleEl.textContent = note.title;
+        pageIdEl.textContent = 'PAGE_ID: ' + pageId.toUpperCase();
+
+        /* Build body HTML */
+        if (!note.content || note.content.trim() === '') {
+          bodyEl.innerHTML = `
+            <div class="dnp-empty">
+              <div class="dnp-empty-icon">📄</div>
+              <div class="dnp-empty-text">// NO ENTRIES YET<br>待填入開發者筆記…</div>
+            </div>`;
+        } else {
+          bodyEl.innerHTML = `<div class="dnp-note-content">${note.content}</div>`;
+        }
+
+        /* Update timestamp */
+        const now = new Date();
+        const ts = now.toISOString().slice(0, 16).replace('T', ' ');
+        tsEl.textContent = 'MARS_OS v2.4.1 // ' + ts;
+
+        /* Open */
+        panel.classList.add('open');
+        backdrop.classList.add('active');
+        isOpen = true;
+      }
+
+      function closeNote() {
+        panel.classList.remove('open');
+        backdrop.classList.remove('active');
+        isOpen = false;
+      }
+
+      /* Trigger buttons on each section */
+      document.querySelectorAll('.dev-note-trigger').forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          const pageId = btn.dataset.page;
+          if (isOpen && titleEl.textContent === (NOTES[pageId] || {}).title) {
+            closeNote();
+          } else {
+            openNote(pageId);
+          }
+        });
+      });
+
+      /* Close via button or backdrop */
+      closeBtn.addEventListener('click', closeNote);
+      backdrop.addEventListener('click', closeNote);
+
+      /* Close on Escape key */
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && isOpen) closeNote();
+      });
+    })();
+
+    // 15. SECTION 7: CTA DELETE ANIMATION
+    (function () {
+      const ctaBtn = document.getElementById('ctaBtn');
+      const ctaTerminal = document.getElementById('ctaTerminal');
+      if (!ctaBtn || !ctaTerminal) return;
+
+      let isDeleting = false;
+
+      ctaBtn.addEventListener('click', () => {
+        if (isDeleting) return;
+        isDeleting = true;
+
+        // Change button style
+        ctaBtn.style.background = '#ff3300';
+        ctaBtn.style.color = '#000';
+        ctaBtn.textContent = 'DELETING...';
+        ctaBtn.style.pointerEvents = 'none';
+
+        // Glitch text effect
+        let glitchInt = setInterval(() => {
+          const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*';
+          let str = '';
+          for(let i=0; i<20; i++) str += chars[Math.floor(Math.random() * chars.length)];
+          ctaTerminal.textContent = 'FILE CORRUPTED: ' + str;
+        }, 50);
+
+        // Screen fade out to black
+        const fadeOverlay = document.createElement('div');
+        fadeOverlay.style.position = 'fixed';
+        fadeOverlay.style.inset = '0';
+        fadeOverlay.style.backgroundColor = '#000';
+        fadeOverlay.style.zIndex = '9999';
+        fadeOverlay.style.opacity = '0';
+        fadeOverlay.style.transition = 'opacity 1.5s ease';
+        document.body.appendChild(fadeOverlay);
+
+        setTimeout(() => {
+          fadeOverlay.style.opacity = '1';
+        }, 500);
+
+        // After animation, show manual exit button to bypass file:// security
+        setTimeout(() => {
+          clearInterval(glitchInt);
+          fadeOverlay.innerHTML = '<a href="index.html" style="color:#ff3300; font-family:monospace; font-size:1.5rem; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-decoration:none; border:1px solid #ff3300; padding:15px 30px; letter-spacing:0.1em; transition:all 0.3s; background:rgba(255,51,0,0.1);">[ SYSTEM DESTROYED - CLICK TO EXIT ]</a>';
+        }, 2200);
+      });
+    })();
+  </script>
+</body>
+
+</html>
