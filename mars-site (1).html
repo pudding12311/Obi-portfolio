@@ -228,9 +228,12 @@
 
     /* 第三層：火星圖片本體 */
     .mars-2d-image {
-      /* 最小 260px，最大 900px，中間按視窗短邊調整 */
-      width: clamp(260px, 68vmin, 900px);
-      height: clamp(260px, 68vmin, 900px);
+      /* 設定絕對寬高為 100vw。
+         這樣火星的半徑永遠精準等於 50vw。
+         配合 left:100% 和 translate(-50%,-50%)，
+         火星的左邊緣會永遠完美貼齊畫面的正中央 (50vw)！ */
+      width: 100vw;
+      height: 100vw;
       max-width: none;
       max-height: none;
       object-fit: contain;
@@ -307,36 +310,25 @@
     @keyframes scrollMove {
       0% {
         top: 50%;
-        left: 85%;
-        /* 整體向右移動，讓右側超出視窗 */
-        transform: translate(-50%, -50%) scale(2.0);
-        /* 再度放大，確保超出邊界 */
-      }
-
-      15% {
-        top: 100%;
         left: 100%;
-        /* 縮小後往右靠緊 (-0px) */
-        transform: translate(calc(-100% - 0px), calc(-100% - 40px)) scale(0.45);
+        /* 中心點在 100vw，半徑 50vw。左邊緣精準切在 50vw，完美填滿右半側！ */
+        transform: translate(-50%, -50%) scale(1.0);
       }
 
+      15%,
       70% {
         top: 100%;
         left: 100%;
-        transform: translate(calc(-100% - 0px), calc(-100% - 40px)) scale(0.45);
+        /* 內頁：縮小為 0.18 (直徑 18vw)。往左拉 15vw，往上拉 26vh (提高位置) */
+        transform: translate(calc(-50% - 15vw), calc(-50% - 26vh)) scale(0.18);
       }
 
-      85% {
-        top: 100%;
-        left: 100%;
-        /* 第7頁時向右移出畫面外 */
-        transform: translate(calc(0% + 150px), calc(-100% - 40px)) scale(0.45);
-      }
-
+      85%,
       100% {
         top: 100%;
         left: 100%;
-        transform: translate(calc(0% + 150px), calc(-100% - 40px)) scale(0.45);
+        /* 第7頁時向右移出畫面外 */
+        transform: translate(calc(-50% + 20vw), calc(-50% - 26vh)) scale(0.18);
       }
     }
 
@@ -355,23 +347,38 @@
 
     /* 平板版微調 */
     @media (max-width: 1024px) {
-      .mars-2d-image {
-        width: clamp(220px, 72vmin, 700px);
-        height: clamp(220px, 72vmin, 700px);
-      }
-
       .tech-content {
         width: min(540px, 70vw);
+      }
+
+      /* 覆寫動畫：因為文字佔了 70vw，火星必須縮更小以避免擋字 */
+      @keyframes scrollMove {
+        0% {
+          top: 50%;
+          left: 100%;
+          /* 平板一樣精準填滿右半側 */
+          transform: translate(-50%, -50%) scale(1.0);
+        }
+
+        15%,
+        70% {
+          top: 100%;
+          left: 100%;
+          /* 縮小為 0.22 (直徑 22vw)，往上拉 24vh */
+          transform: translate(calc(-50% - 16vw), calc(-50% - 24vh)) scale(0.22);
+        }
+
+        85%,
+        100% {
+          top: 100%;
+          left: 100%;
+          transform: translate(calc(-50% + 20vw), calc(-50% - 24vh)) scale(0.22);
+        }
       }
     }
 
     /* 手機版微調：確保右下角的位置不會擋到導覽頁碼 */
     @media (max-width: 768px) {
-      .mars-2d-image {
-        width: clamp(180px, 78vmin, 500px);
-        height: clamp(180px, 78vmin, 500px);
-      }
-
       .tech-content {
         width: 100%;
         max-width: 100%;
@@ -379,36 +386,25 @@
 
       @keyframes scrollMove {
         0% {
-          top: 35%;
-          left: 65%;
-          /* 手機版也向右偏 */
-          transform: translate(-50%, -50%) scale(1.8);
-        }
-
-        15% {
-          top: 100%;
+          top: 50%;
           left: 100%;
-          /* 縮小後往右靠緊 */
-          transform: translate(calc(-100% - 0px), calc(-100% - 80px)) scale(0.5);
+          /* 手機版：一樣完美對齊中線，填滿右半側 */
+          transform: translate(-50%, -50%) scale(1.0);
         }
 
+        15%,
         70% {
           top: 100%;
           left: 100%;
-          transform: translate(calc(-100% - 0px), calc(-100% - 80px)) scale(0.5);
+          /* 手機版：縮小為 0.35 (直徑 35vw)，往上拉 20vh */
+          transform: translate(calc(-50% - 20vw), calc(-50% - 20vh)) scale(0.35);
         }
 
-        85% {
-          top: 100%;
-          left: 100%;
-          /* 第7頁時向右移出畫面外 */
-          transform: translate(calc(0% + 150px), calc(-100% - 80px)) scale(0.5);
-        }
-
+        85%,
         100% {
           top: 100%;
           left: 100%;
-          transform: translate(calc(0% + 150px), calc(-100% - 80px)) scale(0.5);
+          transform: translate(calc(-50% + 30vw), calc(-50% - 20vh)) scale(0.35);
         }
       }
     }
@@ -1393,7 +1389,8 @@
     #dev-notes-panel {
       position: fixed;
       inset: 0;
-      z-index: 9000;
+      z-index: 10001;
+      /* 必須高於火星的 9999 */
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1634,7 +1631,8 @@
     #dev-notes-backdrop {
       position: fixed;
       inset: 0;
-      z-index: 8999;
+      z-index: 10000;
+      /* 必須高於火星的 9999 */
       background: rgba(0, 0, 0, 0);
       pointer-events: none;
       transition: background 0.4s;
@@ -2431,7 +2429,7 @@
         let glitchInt = setInterval(() => {
           const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*';
           let str = '';
-          for(let i=0; i<20; i++) str += chars[Math.floor(Math.random() * chars.length)];
+          for (let i = 0; i < 20; i++) str += chars[Math.floor(Math.random() * chars.length)];
           ctaTerminal.textContent = 'FILE CORRUPTED: ' + str;
         }, 50);
 
@@ -2440,7 +2438,7 @@
         fadeOverlay.style.position = 'fixed';
         fadeOverlay.style.inset = '0';
         fadeOverlay.style.backgroundColor = '#000';
-        fadeOverlay.style.zIndex = '9999';
+        fadeOverlay.style.zIndex = '10005';
         fadeOverlay.style.opacity = '0';
         fadeOverlay.style.transition = 'opacity 1.5s ease';
         document.body.appendChild(fadeOverlay);
