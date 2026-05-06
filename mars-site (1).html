@@ -2416,7 +2416,8 @@
 
       let isDeleting = false;
 
-      ctaBtn.addEventListener('click', () => {
+      ctaBtn.addEventListener('click', (e) => {
+        e.preventDefault();
         if (isDeleting) return;
         isDeleting = true;
 
@@ -2448,10 +2449,14 @@
           fadeOverlay.style.opacity = '1';
         }, 500);
 
-        // Close window after animation
+        // Close window after animation, with fallback to index.html
         setTimeout(() => {
           clearInterval(glitchInt);
           window.close();
+          // 若瀏覽器或預覽器阻擋 window.close()，0.5秒後做備用跳轉
+          setTimeout(() => {
+             window.location.href = 'index.html';
+          }, 500);
         }, 2200);
       });
     })();
