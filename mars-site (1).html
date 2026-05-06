@@ -2449,30 +2449,10 @@
           fadeOverlay.style.opacity = '1';
         }, 500);
 
-        // Close window after animation, with bulletproof fallback
+        // Redirect directly after animation
         setTimeout(() => {
           clearInterval(glitchInt);
-          
-          try {
-            window.close(); // 嘗試直接關閉
-          } catch (err) {
-            console.warn('window.close() blocked by environment');
-          }
-
-          // 0.3秒後如果視窗還在，執行三層保險的跳轉
-          setTimeout(() => {
-             try {
-                // 保險 1：實體標籤點擊（最能突破 iframe 限制）
-                const a = document.createElement('a');
-                a.href = 'index.html';
-                a.target = '_parent'; // 嘗試跳脫可能的 iframe
-                document.body.appendChild(a);
-                a.click();
-             } catch(e) {}
-             
-             // 保險 2：一般跳轉
-             window.location.href = 'index.html';
-          }, 300);
+          window.location.assign('./index.html');
         }, 2200);
       });
     })();
