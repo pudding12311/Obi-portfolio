@@ -2448,10 +2448,10 @@
           fadeOverlay.style.opacity = '1';
         }, 500);
 
-        // Redirect after animation
+        // Close window after animation
         setTimeout(() => {
           clearInterval(glitchInt);
-          window.location.href = 'index.html';
+          window.close();
         }, 2200);
       });
     })();
