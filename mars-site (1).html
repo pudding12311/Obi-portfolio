@@ -2448,10 +2448,10 @@
           fadeOverlay.style.opacity = '1';
         }, 500);
 
-        // After animation, show manual exit button to bypass file:// security
+        // Redirect after animation
         setTimeout(() => {
           clearInterval(glitchInt);
-          fadeOverlay.innerHTML = '<a href="index.html" style="color:#ff3300; font-family:monospace; font-size:1.5rem; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-decoration:none; border:1px solid #ff3300; padding:15px 30px; letter-spacing:0.1em; transition:all 0.3s; background:rgba(255,51,0,0.1);">[ SYSTEM DESTROYED - CLICK TO EXIT ]</a>';
+          window.location.href = 'index.html';
         }, 2200);
       });
     })();
